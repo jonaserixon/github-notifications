@@ -1,0 +1,10 @@
+
+.Navigation {
+    background-color: lightgray;
+    width: 500px;
+    margin:  auto;
+}
+
+.Navigation a {
+    padding: 5px;
+}
