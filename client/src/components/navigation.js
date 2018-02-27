@@ -4,10 +4,11 @@ import {
     Link,
     Route,
     Switch,
-  } from 'react-router-dom';
+} from 'react-router-dom';
 
-import Login from './login';
+import LoginControl from './loginControl';
 import Home from './home';
+import AuthorizeUser from './authorizeUser';
 
 
 class Navigation extends Component {
@@ -33,7 +34,8 @@ class Navigation extends Component {
                     <Switch>
                         {/* <Route exact path='/login' component={() => window.location = 'https://github.com/login/oauth/authorize?client_id=3d47ed6a79c582546a56&redirect_uri=http://localhost:3000/callback'}/> */}
                         <Route exact path="/" component={Home} />
-                        <Route exact path="/login" component={Login} />
+                        <Route exact path="/login" component={LoginControl} />
+                        <Route path='/callback' component={AuthorizeUser} />
                     </Switch>
                 </div>
             </Router>
