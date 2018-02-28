@@ -74,11 +74,28 @@ app.post('/api/github/auth', (req, res) => {
             //mappa ut alla json data i react klienten och presentera i vyn
         }
     });
-
-    //res.json(req.body);
 })
 
+app.post('/api/orgs', (req, res) => {
+    let token = req.body.token;
 
+    let options = {
+        uri: GIT_API_URL + '/user/orgs?access_token=' + token,
+        method: 'GET',
+        headers: {
+            'User-Agent': 'jonne',
+            "Content-Type": "application/json"
+        }
+    };
+
+    request(options, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            console.log(JSON.stringify(body));
+
+            res.json(body);
+        }
+    });
+})
 
 
 
