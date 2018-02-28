@@ -25,8 +25,9 @@ class LoginControl extends Component {
         if (this.state.isLoggedIn) {
 
         } else {
-            window.location = 'https://github.com/login/oauth/authorize?client_id=3d47ed6a79c582546a56&redirect_uri=http://localhost:3000/callback';
+            window.location = 'https://github.com/login/oauth/authorize?client_id=3d47ed6a79c582546a56&&redirect_uri=http://localhost:3000/callback';
 
+            this.onSuccess();
         }
     }
 

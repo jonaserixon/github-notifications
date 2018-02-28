@@ -38,6 +38,9 @@ class AuthorizeUser extends Component {
             },
         })
         .then(res => res.json())
+        .then(function(data) {
+            console.log(data);
+        })
     }
 
     
