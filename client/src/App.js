@@ -5,7 +5,7 @@ import Navigation from './components/navigation';
 class App extends Component {
     constructor() {
         super();
-        this.state = { isAuthenticated: false, user: null, token: ''};
+        this.state = {};
     }
 
     render() {

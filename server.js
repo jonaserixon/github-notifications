@@ -22,28 +22,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-
-app.get('/api', (req, res) => {
-    console.log('najja')
-    res.json([
-        {
-            frase: "hallåj",
-            id: 1
-        },
-        {
-            frase: "tjenixen",
-            id: 2
-        },
-        {
-            frase: "hejsan",
-            id: 3
-        }
-    ]);
-})
-
-
-
 app.post('/api/github/auth', (req, res) => {
     let githubCode = req.body.code;
     console.log(req.body.code);

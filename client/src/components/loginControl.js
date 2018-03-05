@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 
-import AuthorizeUser from './authorizeUser';
-
 class LoginControl extends Component {
     constructor(props) {
         super(props);
@@ -22,27 +20,25 @@ class LoginControl extends Component {
     }
 
     componentDidMount() {
+        const client_id = '3d47ed6a79c582546a56';
+        const redirect_uri = 'http://localhost:3000/callback';
+
         if (this.state.isLoggedIn) {
 
         } else {
-            window.location = 'https://github.com/login/oauth/authorize?client_id=3d47ed6a79c582546a56&&redirect_uri=http://localhost:3000/callback';
+            window.location = 'https://github.com/login/oauth/authorize?client_id=' + client_id + '&&redirect_uri=' + redirect_uri;
 
-            this.onSuccess();
+            //Skicka upp ett state till en parent component och tala om att man nu är inloggad och därefter hämta ner github data osv. därifrån
         }
     }
 
     
 
     render() {
-        const isLoggedIn = this.state.isLoggedIn;
-
-        if (isLoggedIn) {
-
-        }
+        //console.log(this.props.)
         
         return (
             <div className="Login">
-                {/* <AuthorizeUser testa="yolo swag"/> */}
             </div>
         );
     }

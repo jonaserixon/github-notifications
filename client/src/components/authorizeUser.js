@@ -7,8 +7,13 @@ class AuthorizeUser extends Component {
 
         }
     }
+
+    updateURL() {
+        window.history.pushState(null, null, '/');
+    }
     
     componentDidMount() {
+        
         const callbackCode = {
             code: window.location.href.substring(36, window.location.href.length)
         }
@@ -24,16 +29,14 @@ class AuthorizeUser extends Component {
         .then(res => res.json())
         .then(function(token) {
             localStorage.setItem('token', token)
-
-            window.location.replace('http://localhost:3000/');
         })
         //ändra state här och rendera/redirecta användaren nånstans?
+        this.updateURL();
     }
 
     render() {
         return (
             <div className="AuthorizeUser">
-                <h3>yolo</h3>
             </div>
         );
     }
