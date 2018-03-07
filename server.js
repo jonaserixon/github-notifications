@@ -79,7 +79,7 @@ app.post('/api/github/hook', (req, res) => {
     let token = req.body.token;
 
     let jsonData = {
-        name: 'hookah',
+        name: 'web',
         active: true,
         events: [
             push,
