@@ -68,7 +68,7 @@ app.post('/api/orgs', (req, res) => {
 
     request(options, (error, response, body) => {
         if (!error && response.statusCode == 200) {
-            console.log(JSON.stringify(body));
+            //console.log(JSON.stringify(body));
 
             res.json(body);
         }
@@ -82,11 +82,10 @@ app.post('/api/github/hook', (req, res) => {
         name: 'web',
         active: true,
         events: [
-            push,
-            pull_request
+            'repository'
         ],
         config: {
-            url: 'http://localhost:8000',
+            url: 'http://localhost:8000/hookah',
             content_type: 'json'
         }
     }
@@ -97,14 +96,62 @@ app.post('/api/github/hook', (req, res) => {
         method: 'POST',
         headers: {
             'User-Agent': 'jonne',
-            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/json'
         }
     };
 
     request(options, (error, response, body) => {
-
+        console.log(body);
     })
 })
+
+app.get('/hookah', (req, res) => {
+    console.log(req.body);
+})
+
+app.post('/hookah', (req, res) => {
+    console.log(req.body);
+})
+
+
+app.post('/api/github/repo', (req, res) => {
+    let token = req.body.token;
+
+    let jsonData = {
+        name: "Hello-World",
+        description: "This is your first repository",
+        homepage: "https://github.com",
+        private: false,
+        has_issues: true,
+        has_projects: true,
+        has_wiki: false
+    }
+
+    let options = {
+        uri: GIT_API_URL + '/orgs/jonne-1dv612/repos?access_token=' + token,
+        data: {
+            name: "Hello-World",
+            description: "This is your first repository",
+            homepage: "https://github.com",
+            private: false,
+            has_issues: true,
+            has_projects: true,
+            has_wiki: false
+        },
+        method: 'POST',
+        headers: {
+            'User-Agent': 'jonne',
+            // 'Content-Type': 'application/json'
+            // 'Authorization': 'Bearer ' + token
+        }
+    };
+
+    request(options, (error, response, body) => {
+        console.log(body);
+    })
+})
+
+
 
 app.listen(port, () => {
     console.log("Express started on http://localhost:" + port);
