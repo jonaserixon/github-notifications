@@ -18,13 +18,11 @@ class Home extends Component {
         console.log('willmount')
     }
 
-    componentWillUpdate() {
-        console.log('componentwillupdate');
+    // componentWillUpdate() {
+    //     if (localStorage.getItem('token') === null) {
 
-        if (localStorage.getItem('token') === null) {
-
-        }
-    }
+    //     }
+    // }
 
     getOrgs() {
         let access_token = {
@@ -41,34 +39,41 @@ class Home extends Component {
         })
         .then(res => res.json())
         .then(function(data) {
+
             let jsonOrgs = JSON.parse(data);
-            this.setState({orgs: jsonOrgs})
+            let newOrgs = this.state.orgs.slice();
+
+            if (this.state.isLoggedIn) {
+                const renObjData = jsonOrgs.map(function(data, idx) {
+                    return <p key={idx}>{data}</p>;
+                });
+        
+                if (renObjData[0] != null) {
+                    for (let i = 0; i < renObjData.length; i++) {
+                        newOrgs.push(<p>{renObjData[i].props.children.login}</p>);
+                        newOrgs.push(<img src={renObjData[i].props.children.avatar_url} />);
+                    }
+                }
+
+                this.setState({orgs: newOrgs});
+            }
         }.bind(this))
     }
 
     render() {
-        let orgz = []
+        let isUserLoggedIn = 'Logged out'
 
         if (this.state.isLoggedIn) {
-            const renObjData = this.state.orgs.map(function(data, idx) {
-                return <p key={idx}>{data}</p>;
-            });
-    
-            if (renObjData[0] != null) {
-                for (let i = 0; i < renObjData.length; i++) {
-                    orgz.push(<p>{renObjData[i].props.children.login}</p>);
-                    orgz.push(<img src={renObjData[i].props.children.avatar_url} />);
-                }
-            }
+            isUserLoggedIn = 'Logged in as: ' //usernamn från github
         }
         
         return (
           <div className="Home">
             <h2>Homepage</h2>
+            <p>{isUserLoggedIn}</p>
             <div className="Organisations">
-                {orgz}
+                {this.state.orgs}
             </div>
-            
           </div>
         );
     }

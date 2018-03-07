@@ -35,7 +35,7 @@ app.post('/api/github/auth', (req, res) => {
         }
     };
 
-    request(options, function (error, response, body) {
+    request(options, (error, response, body) => {
         if (!error && response.statusCode == 200) {
 
             let access_token = body.substring(13, 53);
@@ -62,11 +62,11 @@ app.post('/api/orgs', (req, res) => {
         method: 'GET',
         headers: {
             'User-Agent': 'jonne',
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         }
     };
 
-    request(options, function (error, response, body) {
+    request(options, (error, response, body) => {
         if (!error && response.statusCode == 200) {
             console.log(JSON.stringify(body));
 
@@ -75,27 +75,38 @@ app.post('/api/orgs', (req, res) => {
     });
 })
 
+app.post('/api/github/hook', (req, res) => {
+    let token = req.body.token;
 
+    let jsonData = {
+        name: 'hookah',
+        active: true,
+        events: [
+            push,
+            pull_request
+        ],
+        config: {
+            url: 'http://localhost:8000',
+            content_type: 'json'
+        }
+    }
 
-app.listen(port, function() {
+    let options = {
+        uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
+        data: jsonData,
+        method: 'POST',
+        headers: {
+            'User-Agent': 'jonne',
+            'Content-Type': 'application/json'
+        }
+    };
+
+    request(options, (error, response, body) => {
+
+    })
+})
+
+app.listen(port, () => {
     console.log("Express started on http://localhost:" + port);
     console.log("Press Ctrl-C to terminate...");
 });
-
-
-
-// let opt = {
-//     uri: 'https://api.github.com/viatrophy/orgs/',
-//     //uri: 'https://api.github.com/viatrophy/orgs?',
-//     method: 'GET',
-//     headers: {
-//         'User-Agent': 'jonne',
-//         "Content-Type": "application/json",
-//         'Authorization': access_token
-//     }
-// };
-
-// request(opt, function (err, res, data) {
-//     console.log(JSON.parse(data));
-    
-// })
