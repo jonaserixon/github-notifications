@@ -41,7 +41,7 @@ class Login extends Component {
         })
         .then(res => res.json())
         .then(function(token) {
-            localStorage.setItem('token', token)
+            return localStorage.setItem('token', token)
         })
         
         window.history.pushState(null, null, '/login');

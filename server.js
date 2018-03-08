@@ -57,6 +57,8 @@ app.post('/api/github/auth', (req, res) => {
 app.post('/api/orgs', (req, res) => {
     let token = req.body.token;
 
+    console.log('ORGS TOKEN: ' + token);
+
     let options = {
         uri: GIT_API_URL + '/user/orgs?access_token=' + token,
         method: 'GET',
@@ -78,39 +80,59 @@ app.post('/api/orgs', (req, res) => {
 app.post('/api/github/hook', (req, res) => {
     let token = req.body.token;
 
-    let jsonData = {
-        name: 'web',
+    console.log('HookaH TOKEN: ' + token);
+
+    let jsonData = JSON.stringify({
+        name: "web",
         active: true,
         events: [
-            'repository'
+            "*"
         ],
         config: {
-            url: 'http://localhost:8000/hookah',
-            content_type: 'json'
+            url: "http://localhost:8000/hookah",
+            content_type: "json"
         }
-    }
+    })
 
     let options = {
         uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
-        data: jsonData,
+        //json: jsonData,
         method: 'POST',
         headers: {
             'User-Agent': 'jonne',
-            // 'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
+            //"Authorization": "Token " + token
+        },
+        json: {
+            "name": "web",
+            "active": true,
+            "events": [
+                "repository",
+            ],
+            "config": {
+                "url": "http://localhost:8000/hookah",
+                "content_type": "json"
+            }
         }
     };
 
     request(options, (error, response, body) => {
         console.log(body);
+
+        if (!error && response.statusCode == 200) {
+
+            res.json(body);
+        }
     })
 })
 
 app.get('/hookah', (req, res) => {
-    console.log(req.body);
+    console.log('GET HOOKAH');
 })
 
 app.post('/hookah', (req, res) => {
-    console.log(req.body);
+    console.log('POST HOOKAH');
+    res.json(req.body)
 })
 
 
@@ -143,7 +165,7 @@ app.post('/api/github/repo', (req, res) => {
             'User-Agent': 'jonne',
             // 'Content-Type': 'application/json'
             // 'Authorization': 'Bearer ' + token
-        }
+        } //ändra bearer till token
     };
 
     request(options, (error, response, body) => {

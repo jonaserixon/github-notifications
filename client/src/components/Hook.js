@@ -9,18 +9,21 @@ class Hook extends Component {
     }
 
     componentDidMount() {
-        fetch('/api/github/repo',{
-            body: localStorage.getItem('token'),
+        let access_token = {
+            token: localStorage.getItem('token')
+        }
+
+        console.log(access_token);
+
+        fetch('/api/github/hook',{
+            body: JSON.stringify(access_token),
             method: 'POST',
             headers: {
-                // 'Accept': 'application/json',
-                // 'Content-Type': 'application/json'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
         })
-        .then(res => res.json())
-        .then(function(hook) {
-
-        })
+        .then(res => res.json());
     }
 
     render() {
