@@ -1,10 +1,39 @@
 
-.Navigation {
+.App {
     background-color: lightgray;
     width: 500px;
     margin:  auto;
 }
 
+.Navigation {
+    text-align: center;
+    background-color: slategray;
+}
+
 .Navigation a {
     padding: 5px;
+}
+
+
+.Organisations {
+    background-color: pink;
+    width: 120px;
+}
+
+.org {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+    background-color: ghostwhite;
+    border: 3px solid black;
+    text-align: center;
+}
+
+.org p {
+    margin:0;
+}
+
+.org img {
+    width: 60px;
+    height: 60px;
 }

@@ -3,7 +3,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const request = require('request');
+
+const mongoose = require('mongoose');
+let User = require('./models/User');
+let UserModel = mongoose.model('users-github');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -12,167 +15,14 @@ const port = process.env.PORT || 8000;
 const CLIENT_ID = '3d47ed6a79c582546a56';
 const CLIENT_SECRET = '81028b61f7d1bc565eab1d43f59f345393d11cb6';
 
-const GIT_API_URL='https://api.github.com';
-
 
 require('./config/database').initialize();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.post('/api/github/auth', (req, res) => {
-    let githubCode = req.body.code;
-    console.log(req.body.code);
-
-    let options = {
-        uri: 'https://github.com/login/oauth/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&code=' + githubCode,
-        method: 'POST',
-        headers: {
-            'User-Agent': 'jonne',
-            "Content-Type": "application/json"
-        }
-    };
-
-    request(options, (error, response, body) => {
-        if (!error && response.statusCode == 200) {
-
-            let access_token = body.substring(13, 53);
-
-            console.log(body);
-            console.log(access_token);
-
-            res.json(access_token);
-
-            //user/repos?access_token=
-
-            //Skicka tillbaks token till klienten och spara i typ localstorage elr nå
-            //gör route i servern för att skicka ut t.ex. alla orgs till klienten
-            //mappa ut alla json data i react klienten och presentera i vyn
-        }
-    });
-})
-
-app.post('/api/orgs', (req, res) => {
-    let token = req.body.token;
-
-    console.log('ORGS TOKEN: ' + token);
-
-    let options = {
-        uri: GIT_API_URL + '/user/orgs?access_token=' + token,
-        method: 'GET',
-        headers: {
-            'User-Agent': 'jonne',
-            'Content-Type': 'application/json'
-        }
-    };
-
-    request(options, (error, response, body) => {
-        if (!error && response.statusCode == 200) {
-            //console.log(JSON.stringify(body));
-
-            res.json(body);
-        }
-    });
-})
-
-app.post('/api/github/hook', (req, res) => {
-    let token = req.body.token;
-
-    console.log('HookaH TOKEN: ' + token);
-
-    let jsonData = JSON.stringify({
-        name: "web",
-        active: true,
-        events: [
-            "*"
-        ],
-        config: {
-            url: "http://localhost:8000/hookah",
-            content_type: "json"
-        }
-    })
-
-    let options = {
-        uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
-        //json: jsonData,
-        method: 'POST',
-        headers: {
-            'User-Agent': 'jonne',
-            'Content-Type': 'application/json'
-            //"Authorization": "Token " + token
-        },
-        json: {
-            "name": "web",
-            "active": true,
-            "events": [
-                "repository",
-            ],
-            "config": {
-                "url": "http://localhost:8000/hookah",
-                "content_type": "json"
-            }
-        }
-    };
-
-    request(options, (error, response, body) => {
-        console.log(body);
-
-        if (!error && response.statusCode == 200) {
-
-            res.json(body);
-        }
-    })
-})
-
-app.get('/hookah', (req, res) => {
-    console.log('GET HOOKAH');
-})
-
-app.post('/hookah', (req, res) => {
-    console.log('POST HOOKAH');
-    res.json(req.body)
-})
-
-
-app.post('/api/github/repo', (req, res) => {
-    let token = req.body.token;
-
-    let jsonData = {
-        name: "Hello-World",
-        description: "This is your first repository",
-        homepage: "https://github.com",
-        private: false,
-        has_issues: true,
-        has_projects: true,
-        has_wiki: false
-    }
-
-    let options = {
-        uri: GIT_API_URL + '/orgs/jonne-1dv612/repos?access_token=' + token,
-        data: {
-            name: "Hello-World",
-            description: "This is your first repository",
-            homepage: "https://github.com",
-            private: false,
-            has_issues: true,
-            has_projects: true,
-            has_wiki: false
-        },
-        method: 'POST',
-        headers: {
-            'User-Agent': 'jonne',
-            // 'Content-Type': 'application/json'
-            // 'Authorization': 'Bearer ' + token
-        } //ändra bearer till token
-    };
-
-    request(options, (error, response, body) => {
-        console.log(body);
-    })
-})
-
+app.use('/', require('./routes/api/routes')(CLIENT_ID, CLIENT_SECRET, UserModel));
 
 
 app.listen(port, () => {

@@ -40,11 +40,13 @@ class Login extends Component {
             },
         })
         .then(res => res.json())
-        .then(function(token) {
-            return localStorage.setItem('token', token)
+        .then(function(data) {
+            localStorage.setItem('token', data.access_token)
+            // localStorage.setItem('username', token)
+            // localStorage.setItem('token', token)
         })
         
-        window.history.pushState(null, null, '/login');
+        //window.history.pushState(null, null, '/login');
     }
 
     render() {        

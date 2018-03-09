@@ -50,7 +50,7 @@ class App extends Component {
         if (this.state.redirect) {
             this.setState({redirect: false}, function() {
                 console.log('has redirected');
-                window.history.pushState(null, null, '/');
+                //window.history.pushState(null, null, '/');
             });
         }
 
@@ -60,11 +60,12 @@ class App extends Component {
         <Router>
             <div className="App">
 
-                <Link to="/" >Home</Link>
-                <Link to="/login" onClick={this.login} >Login</Link>
-                <Link to="/logout" onClick={this.logout} >Logout</Link>
-                {this.state.showOrgButton}
-                
+                <div className="Navigation">
+                    <Link to="/" >Home</Link>
+                    <Link to="/login" onClick={this.login} >Login</Link>
+                    <Link to="/logout" onClick={this.logout} >Logout</Link>
+                    {this.state.showOrgButton}
+                </div>
 
                 <Switch>
                     <Route exact path='/' component={() => <Home />} />

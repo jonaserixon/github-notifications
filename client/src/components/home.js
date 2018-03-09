@@ -50,8 +50,7 @@ class Home extends Component {
         
                 if (renObjData[0] != null) {
                     for (let i = 0; i < renObjData.length; i++) {
-                        newOrgs.push(<p>{renObjData[i].props.children.login}</p>);
-                        newOrgs.push(<img src={renObjData[i].props.children.avatar_url} />);
+                        newOrgs.push(<div className="org"> <a href="#"><p>{renObjData[i].props.children.login}</p> <img src={renObjData[i].props.children.avatar_url} /></a> </div>);
                     }
                 }
 
