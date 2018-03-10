@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import io from 'socket.io-client';
 
 class Home extends Component {
     constructor() {
@@ -7,6 +8,8 @@ class Home extends Component {
             orgs: [],
             isLoggedIn: false
         }
+
+        this.socket = io('http://localhost:8000');
     }
 
     componentWillMount() {
@@ -17,12 +20,6 @@ class Home extends Component {
 
         console.log('willmount')
     }
-
-    // componentWillUpdate() {
-    //     if (localStorage.getItem('token') === null) {
-
-    //     }
-    // }
 
     getOrgs() {
         let access_token = {

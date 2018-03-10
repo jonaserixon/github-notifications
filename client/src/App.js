@@ -17,6 +17,10 @@ class App extends Component {
             showOrgButton: ''
         };
 
+        
+
+        
+
         this.logout = this.logout.bind(this);
     }
 
@@ -31,6 +35,7 @@ class App extends Component {
                 console.log('ingen orgs länk')
             });
         }
+        
     }
 
     logout() {
