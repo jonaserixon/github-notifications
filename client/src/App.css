@@ -37,3 +37,25 @@
     width: 60px;
     height: 60px;
 }
+
+.Notifications {
+    background-color: slategrey;
+    /* float: right;
+    margin-top: -500px; */
+    border: 1px solid black;
+    padding: 3px;
+    min-height: 480px;
+}
+
+.notis {
+    width: 150px;
+    height: 100px;
+    margin-bottom: 10px;
+    background-color: ghostwhite;
+    border: 3px solid black;
+    text-align: center;
+}
+
+.notis p {
+    margin:0;
+}

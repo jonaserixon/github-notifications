@@ -7,11 +7,12 @@ const mongoose = require('mongoose');
 const GIT_API_URL='https://api.github.com';
 
 
-module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel) {
+module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
     router.post('/api/github/auth', (req, res) => {
+        
         let githubCode = req.body.code;
-        console.log(req.body.code);
+        console.log('auth baby ' + req.body.code);
     
         let options = {
             uri: 'https://github.com/login/oauth/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&code=' + githubCode,
@@ -54,7 +55,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel) {
                                     }
                                 })
                             }
-
+                            
                             res.json({access_token, userData});
                         })
                     }
@@ -63,8 +64,9 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel) {
         });
     })
 
-    
     router.post('/api/orgs', (req, res) => {
+        
+        console.log('/api/orgs bror')
         let token = req.body.token;
         
         let options = {
@@ -79,50 +81,86 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel) {
         request(options, (error, response, body) => {
             if (!error && response.statusCode == 200) {    
                 res.json(body);
+            } else {
+                res.json({message: 'error typ'})
             }
         });
     })
-    
-    
-    router.post('/api/github/hook', (req, res) => {
-        let token = req.body.token;
-    
-        let options = {
-            uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
-            method: 'POST',
-            headers: {
-                'User-Agent': 'jonne',
-                'Content-Type': 'application/json'
-            },
-            json: {
-                "name": "web",
-                "active": true,
-                "events": [
-                    "repository",
-                ],
-                "config": {
-                    "url": "http://3683686c.ngrok.io/hookah",
-                    "content_type": "json"
-                }
-            }
-        };
-    
-        request(options, (error, response, body) => {    
-            if (!error && response.statusCode == 200) {
-                res.json(body);
-            }
-        })
-    })
-    
+
+
+
+
+
 
     
-    router.get('/hookah', (req, res) => {
-        console.log('GET HOOKAH');
-    })
-    
-    router.post('/hookah', (req, res) => {
+    router.route('/api/github/hook') 
+        .post((req, res) => {
+            let token = req.body.token;
+        
+            let options = {
+                uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
+                method: 'POST',
+                headers: {
+                    'User-Agent': 'jonne',
+                    'Content-Type': 'application/json'
+                },
+                json: {
+                    "name": "web",
+                    "active": true,
+                    "events": [
+                        "*",
+                    ],
+                    "config": {
+                        "url": "http://a9c9cc68.ngrok.io/hook",
+                        "content_type": "json"
+                    }
+                }
+            };
+        
+            request(options, (error, response, body) => {    
+                if (!error && response.statusCode == 200) {
+                    res.json(body);
+                } else {
+                    res.json({message: 'error typ'})
+                }
+            })
+        })
+
+    router.route('/api/github/hooklist') 
+        .post((req, res) => {
+            let token = req.body.token;
+        
+            let options = {
+                uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'jonne',
+                    'Content-Type': 'application/json'
+                }
+            }
+
+            request(options, (error, response, body) => {    
+                if (!error && response.statusCode == 200) {
+                    console.log(body)
+                    res.json(body);
+                } else {
+                    res.json({message: 'error typ'})
+                }
+            })
+        })
+
+
+
+    router.post('/hook', (req, res) => {
         console.log('POST HOOKAH');
-        res.json(req.body)
+        console.log(req.body)
+
+        //emitta socket event här
+        res.json({message: 'här är din lille hook typ'});
+
+        io.emit('notiser',
+            {data: req.body}
+        )
     })
 
     return router;
