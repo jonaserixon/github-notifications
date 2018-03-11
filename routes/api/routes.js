@@ -65,8 +65,6 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
     })
 
     router.post('/api/orgs', (req, res) => {
-        
-        console.log('/api/orgs bror')
         let token = req.body.token;
         
         let options = {
@@ -126,12 +124,12 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
             })
         })
 
-    router.route('/api/github/hooklist') 
+    router.route('/api/github/handlehook') 
         .post((req, res) => {
             let token = req.body.token;
         
             let options = {
-                uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
+                uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token,
                 method: 'GET',
                 headers: {
                     'User-Agent': 'jonne',
@@ -140,6 +138,9 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
             }
 
             request(options, (error, response, body) => {    
+
+                //Kolla om arrayen med hooks är tom eller inte och agera utifrån det
+
                 if (!error && response.statusCode == 200) {
                     console.log(body)
                     res.json(body);

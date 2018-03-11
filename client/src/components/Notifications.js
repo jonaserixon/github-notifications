@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import io from 'socket.io-client';
 
 class Notifications extends Component {
     constructor(props) {
@@ -11,14 +12,58 @@ class Notifications extends Component {
     componentDidMount() {
         this.setState({selectedOrg: window.location.href.substring(36, window.location.href.length)}, () => {
             console.log(this.state.selectedOrg)
+            this.enableNotifications();
+        })
+    }
+
+    enableNotifications() {
+        //Skicka en request och ange den selectade organisationen för att antingen skapa en hook för den eller kolla om det redan finns en hook för den.
+
+        //Skriv ut alla events från repots historik. presentera dom som "older" notifications.
+
+        let options = {
+            token: localStorage.getItem('token'),
+            selectedOrg: this.state.selectedOrg
+        }
+
+        fetch('/api/github/handlehook',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+
         })
     }
 
     getNotifications() {
-        //Skicka en request och ange den selectade organisationen för att antingen skapa en hook för den eller kolla om det redan finns en hook för den.
+        let newNotifications = this.state.notifications.slice();
+
+        this.socket = io('http://localhost:8000');
+
+        this.socket.on('notiser', function(data){
+            console.log(data.data)
+
+            newNotifications.push(
+                <div className="notis"> 
+                    <p>{data.data.action}</p>
+                    <p>{data.data.issue.title}</p>
+                    <p>{data.data.issue.body}</p>
+                    <p>{data.data.sender.login}</p>
+                </div>
+            )
+
+            this.setState({notifications: newNotifications});
+        }.bind(this));
     }
 
     render() {
+
+        
         
         return (
             <div className="Notifications">
