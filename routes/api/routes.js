@@ -78,6 +78,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
     
         request(options, (error, response, body) => {
             if (!error && response.statusCode == 200) {    
+                //console.log('/api/orgs')
                 res.json(body);
             } else {
                 res.json({message: 'error typ'})
@@ -87,16 +88,17 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
 
 
-
-
-
-    
     router.route('/api/github/hook') 
         .post((req, res) => {
+            console.log('skapa en liten hook här va')
+            console.log(req.body.token);
+            console.log(req.body.selectedOrg);
+
             let token = req.body.token;
+            let selectedOrg = req.body.selectedOrg;
         
             let options = {
-                uri: GIT_API_URL + '/orgs/jonne-1dv612/hooks?access_token=' + token,
+                uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
                 method: 'POST',
                 headers: {
                     'User-Agent': 'jonne',
@@ -104,12 +106,12 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                 },
                 json: {
                     "name": "web",
-                    "active": true,
+                    "active": false,
                     "events": [
-                        "*",
+                        "issues",
                     ],
                     "config": {
-                        "url": "http://a9c9cc68.ngrok.io/hook",
+                        "url": "http://f662ad7e.ngrok.io/hook",
                         "content_type": "json"
                     }
                 }
@@ -117,51 +119,221 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
         
             request(options, (error, response, body) => {    
                 if (!error && response.statusCode == 200) {
+                    console.log(body);
                     res.json(body);
                 } else {
+                    console.log(body);
                     res.json({message: 'error typ'})
                 }
             })
         })
 
-    router.route('/api/github/handlehook') 
-        .post((req, res) => {
+
+    router.route('/api/github/hook') 
+        .patch((req, res) => {
+            //gå igenom alla hooks och sätt dom till active: false
+            console.log('patch route')
+
             let token = req.body.token;
-        
+            let selectedOrg = req.body.selectedOrg;
+            let hook_id = req.body.hook_id;
+            let shouldBeActive = req.body.shouldBeActive;
+
             let options = {
-                uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token,
-                method: 'GET',
+                uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks/' + hook_id + '?access_token=' + token,
+                method: 'PATCH',
                 headers: {
                     'User-Agent': 'jonne',
                     'Content-Type': 'application/json'
+                },
+                json: {
+                    "name": "web",
+                    "active": shouldBeActive,
+                    "events": [
+                        "issues",
+                    ]
                 }
-            }
+            };
 
             request(options, (error, response, body) => {    
-
-                //Kolla om arrayen med hooks är tom eller inte och agera utifrån det
-
-                if (!error && response.statusCode == 200) {
-                    console.log(body)
-                    res.json(body);
-                } else {
+                if (error) {
+                    console.log('errorlito');
                     res.json({message: 'error typ'})
+                } else {
+                    console.log('success patch:');
+                    //console.log(body)
+                    res.json(body);
                 }
             })
         })
 
+
+
+
+
+    function turnOffNotificationsAllOrgs(token) {
+
+        let options = {
+            uri: GIT_API_URL + '/user/orgs?access_token=' + token,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'jonne',
+                'Content-Type': 'application/json'
+            }
+        };
+    
+        request(options, (error, response, body) => {
+            if (!error && response.statusCode == 200) {    
+                console.log('turnoffNotifications()')
+                //console.log(body);
+                let orgsJson = JSON.parse(body);
+                let orgs = [];
+
+                for (let i = 0; i < orgsJson.length; i++) {
+                    orgs.push(orgsJson[i].login);
+
+                    let options = {
+                        uri: GIT_API_URL + '/orgs/' + orgsJson[i].login + '/hooks?access_token=' + token,
+                        method: 'GET',
+                        headers: {
+                            'User-Agent': 'jonne',
+                            'Content-Type': 'application/json'
+                        }
+                    };
+
+                    request(options, (error, response, body) => {    
+                        console.log(orgsJson[i].login);
+                        let hooksJson = JSON.parse(body);
+
+                        if (hooksJson.length != undefined) {
+                            console.log(hooksJson[0].id)
+
+                            //GÖR ALLA HOOKS TILL ACTIVE: FALSE
+                            request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[0].id, shouldBeActive: false }},
+                                function (error, res, body) {
+                                    console.log(body);
+                                }
+                            );
+                        }
+
+                        //Har tillgång till alla hook_ids
+                        //Nu kan jag patcha dom var och en
+                    })
+                }
+
+                //Får ut alla hooks i varje organization
+                //Gör en patch på varje hook för att sätta den till active: false
+
+            } else {
+
+            }
+        });
+    }
+
+    //Steg 1: resetta alla org hooks till active: false och sedan kolla selected org och gör den till active.
+    router.route('/api/github/handlehook') 
+        .post((req, res) => {
+            let token = req.body.token;
+            let options = { uri: GIT_API_URL + '/user/orgs?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }};
+        
+            //Hämta användarens alla organizationer
+            request(options, (error, response, body) => {
+
+                if (!error && response.statusCode == 200) {    
+                    let orgsJson = JSON.parse(body);
+                    let orgs = [];
+                    
+                    
+                    for (let i = 0; i < orgsJson.length; i++) {
+
+                        orgs.push(orgsJson[i].login);
+                        let options = {uri: GIT_API_URL + '/orgs/' + orgsJson[i].login + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }};
+    
+                        //Hämta alla hooks tillhörande organizationerna
+                        request(options, (error, response, body) => {    
+                            let hooksJson = JSON.parse(body);
+    
+                            if (hooksJson.length != undefined && hooksJson[0] != undefined) {
+
+                                //GÖR ALLA HOOKS TILL ACTIVE: FALSE
+                                request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[0].id, shouldBeActive: false }},
+                                    function (error, res, body) {
+                                        console.log('första nestade loggen')
+
+                                        let options = { uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
+
+                                        //Göra den selectade organizationen aktiv för hooks
+                                        request(options, (error, response, body) => {    
+                                            console.log('andra request delen')
+                                            
+                                            // if (body == '[]' || body.length <= 2 || JSON.parse(body).message == 'Not Found') { //Kolla om arrayen med hooks är tom eller inte och agera utifrån det
+                                            //                                                                                 //Skapa event åt organization om det går som blir active: true
+                                            //     request.post('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token }}, 
+                                            //         function (error, res, body) {}
+                                            //     );
+                                            // }
+                                            if (!error && response.statusCode == 200) {
+                                                                                                                                //Enable notifications på organizationen genom active: true i patch
+                                                                                                                                //gör en patch request o ändra active till true
+                                                request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token, hook_id: JSON.parse(body)[0].id, shouldBeActive: true }},
+                                                    function (error, res, body) {
+                                                        //console.log('nu är hooken active')
+                                                    }
+                                                );
+
+                                                //res.json(body);
+
+                                            } else {
+                                                console.log(error);
+                                            }
+                                        })
+                                    }
+                                );
+                            } else {
+                                //hooks som inte existerar. skapa dom
+                                let options = { uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
+
+                                //Göra den selectade organizationen aktiv för hooks
+                                request(options, (error, response, body) => {    
+                                    console.log('andra request delen')
+                                    
+                                    if (body == '[]' || body.length <= 2 || JSON.parse(body).message == 'Not Found') { //Kolla om arrayen med hooks är tom eller inte och agera utifrån det
+                                                                                                                    //Skapa event åt organization om det går som blir active: true
+                                        request.post('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token }}, 
+                                            function (error, res, body) {}
+                                        );
+                                    }
+                                })
+                                console.log('lite problem va')
+                            }
+                        })
+                    }
+
+                    //den här sätter den selectade till active: true
+                    //Får ut alla hooks i varje organization
+                    //Gör en patch på varje hook för att sätta den till active: false
+                }
+            });
+        })
+ 
 
 
     router.post('/hook', (req, res) => {
         console.log('POST HOOKAH');
-        console.log(req.body)
+        //console.log(req.body)
 
         //emitta socket event här
         res.json({message: 'här är din lille hook typ'});
 
-        io.emit('notiser',
-            {data: req.body}
-        )
+        if (req.body.issue == undefined) {
+
+        } else {
+            io.emit('notiser',
+                {data: req.body}
+            )
+        }
+
+        
     })
 
     return router;

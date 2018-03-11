@@ -5,7 +5,14 @@ class Notifications extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedOrg: ''
+            selectedOrg: '',
+            notifications: []
+        }
+    }
+
+    componentWillMount() {
+        if (localStorage.getItem('token') !== null) {
+            this.getNotifications();
         }
     }
 
@@ -36,11 +43,12 @@ class Notifications extends Component {
         })
         .then(res => res.json())
         .then((data) => {
-
+            console.log('enablenots(): ' + data)
         })
     }
 
     getNotifications() {
+        console.log(this.state.notifications);
         let newNotifications = this.state.notifications.slice();
 
         this.socket = io('http://localhost:8000');
@@ -62,12 +70,10 @@ class Notifications extends Component {
     }
 
     render() {
-
-        
-        
         return (
             <div className="Notifications">
-                {this.state.selectedOrg}
+                <div>{this.state.selectedOrg}</div>
+                <div>{this.state.notifications}</div>
             </div>
         );
     }
