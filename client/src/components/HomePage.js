@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class Home extends Component {
+class HomePage extends Component {
     constructor() {
         super();
         this.state = {
@@ -8,8 +8,6 @@ class Home extends Component {
             notifications: [],
             isLoggedIn: false
         }
-
-        
     }
 
     componentWillMount() {
@@ -18,6 +16,10 @@ class Home extends Component {
         }
 
         console.log('willmount')
+    }
+
+    componentDidMount() {
+        console.log('home did mount')
     }
 
     render() {
@@ -36,4 +38,4 @@ class Home extends Component {
     }
 }
 
-export default Home;
+export default HomePage;

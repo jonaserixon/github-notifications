@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Link, Route, Switch, Redirect } from 'react-ro
 import './App.css';
 
 import Login from './components/Login';
-import Home from './components/Home';
+import HomePage from './components/HomePage';
 import Hook from './components/Hook';
 import Organisations from './components/Organisations';
 
@@ -55,8 +55,6 @@ class App extends Component {
             });
         }
 
-        
-
         return (
         <Router>
             <div className="App">
@@ -64,12 +62,12 @@ class App extends Component {
                 <div className="Navigation">
                     <Link to="/" >Home</Link>
                     <Link to="/login" onClick={this.login} >Login</Link>
-                    <Link to="/logout" onClick={this.logout} >Logout</Link>
+                    <Link to="#" onClick={this.logout} >Logout</Link>
                     <Link to="/organisations" >Organisations</Link>
                 </div>
 
                 <Switch>
-                    <Route exact path='/' component={() => <Home />} />
+                    <Route exact path='/' component={() => <HomePage />} />
                     <Route path='/login' component={() => <Login wantsToLogin={true} />} />
                     <Route path='/callback' component={() => <Login githubCallback={true} />} />
                     <Route exact path='/hook' component={() => <Hook />} />

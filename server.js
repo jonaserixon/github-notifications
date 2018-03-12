@@ -15,7 +15,8 @@ var io = require('socket.io')(server);
 const mongoose = require('mongoose');
 let User = require('./models/User');
 let UserModel = mongoose.model('users-github');
-
+let Event = require('./models/Event');
+let EventModel = mongoose.model('event-github');
 
 
 //Gör till env variablar
@@ -30,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-app.use('/', require('./routes/api/routes')(CLIENT_ID, CLIENT_SECRET, UserModel, io));
+app.use('/', require('./routes/api/routes')(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io));
 
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');

@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const GIT_API_URL='https://api.github.com';
 
 
-module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
+module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
 
     router.post('/api/github/auth', (req, res) => {
         
@@ -47,6 +47,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                         }
             
                         UserModel.findOne({login: data.login}, function(err, doc) {
+                            console.log(data.login)
                             if (err) {
                                 let registerNewUser = new UserModel(userData);
                                 registerNewUser.save((err, doc) => {
@@ -129,10 +130,10 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                     "name": "web",
                     "active": false,
                     "events": [
-                        "issues",
+                        "*",
                     ],
                     "config": {
-                        "url": "http://f662ad7e.ngrok.io/hook",
+                        "url": "http://2e9f9a61.ngrok.io/hook",
                         "content_type": "json"
                     }
                 }
@@ -171,7 +172,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                     "name": "web",
                     "active": shouldBeActive,
                     "events": [
-                        "issues",
+                        "*",
                     ]
                 }
             };
@@ -188,68 +189,6 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
             })
         })
 
-
-
-
-
-    function turnOffNotificationsAllOrgs(token) {
-
-        let options = {
-            uri: GIT_API_URL + '/user/orgs?access_token=' + token,
-            method: 'GET',
-            headers: {
-                'User-Agent': 'jonne',
-                'Content-Type': 'application/json'
-            }
-        };
-    
-        request(options, (error, response, body) => {
-            if (!error && response.statusCode == 200) {    
-                console.log('turnoffNotifications()')
-                //console.log(body);
-                let orgsJson = JSON.parse(body);
-                let orgs = [];
-
-                for (let i = 0; i < orgsJson.length; i++) {
-                    orgs.push(orgsJson[i].login);
-
-                    let options = {
-                        uri: GIT_API_URL + '/orgs/' + orgsJson[i].login + '/hooks?access_token=' + token,
-                        method: 'GET',
-                        headers: {
-                            'User-Agent': 'jonne',
-                            'Content-Type': 'application/json'
-                        }
-                    };
-
-                    request(options, (error, response, body) => {    
-                        console.log(orgsJson[i].login);
-                        let hooksJson = JSON.parse(body);
-
-                        if (hooksJson.length != undefined) {
-                            console.log(hooksJson[0].id)
-
-                            //GÖR ALLA HOOKS TILL ACTIVE: FALSE
-                            request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[0].id, shouldBeActive: false }},
-                                function (error, res, body) {
-                                    console.log(body);
-                                }
-                            );
-                        }
-
-                        //Har tillgång till alla hook_ids
-                        //Nu kan jag patcha dom var och en
-                    })
-                }
-
-                //Får ut alla hooks i varje organization
-                //Gör en patch på varje hook för att sätta den till active: false
-
-            } else {
-
-            }
-        });
-    }
 
     //Steg 1: resetta alla org hooks till active: false och sedan kolla selected org och gör den till active.
     router.route('/api/github/handlehook') 
@@ -301,10 +240,6 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                                         })
                                     }
                                 );
-                            } else {
-                                //hooks som inte existerar. skapa dom
-                                console.log('lite problem va')
-                                console.log(error)
                             }
                         })
                     }
@@ -322,13 +257,49 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
     router.post('/hook', (req, res) => {
         console.log('POST HOOKAH');
+        let json = JSON.stringify(req.body);
 
+        let event_id = req.headers['x-github-delivery'];
+        let event_type = req.headers['x-github-event'];
+
+        console.log(event_id)
+
+        EventModel.findOne({event_id}, function(err, doc) {
+            console.log(doc);
+
+            let eventData = {
+                event_id: event_id,
+                event_type: event_type,
+            }
+
+            if (err) {
+                console.log('spara de lille eventet va')
+                let newEvent = new EventModel(eventData);
+                newEvent.save((err, doc) => {
+                    if (err) {
+                        res.status(500).json(error);
+                    }
+
+                    console.log('success');
+                    console.log(doc);
+                })
+            } else {
+                console.log('eventet fanns tydligen redan i dbEN ')
+            }
+        })
+        
+
+        //Spara event i databasen
+        //Skicka ut till klienten genom socket
+
+        console.log();
+        
         if (req.body.issue == undefined) {
 
         } else {
-            io.emit('notiser',
-                {data: req.body}
-            )
+            // io.emit('notiser',
+            //     {data: req.body}
+            // )
         }
 
         res.json({message: 'här är din lille hook typ'});

@@ -56,14 +56,14 @@ class Notifications extends Component {
         this.socket.on('notiser', function(data){
             console.log(data.data)
 
-            newNotifications.push(
-                <div className="notis"> 
-                    <p>{data.data.action}</p>
-                    <p>{data.data.issue.title}</p>
-                    <p>{data.data.issue.body}</p>
-                    <p>{data.data.sender.login}</p>
-                </div>
-            )
+            // newNotifications.push(
+            //     <div className="notis"> 
+            //         <p>{data.data.action}</p>
+            //         <p>{data.data.issue.title}</p>
+            //         <p>{data.data.issue.body}</p>
+            //         <p>{data.data.sender.login}</p>
+            //     </div>
+            // )
 
             this.setState({notifications: newNotifications});
         }.bind(this));

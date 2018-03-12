@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { BrowserRouter as Router, Link, Route, Switch, Redirect } from 'react-router-dom';
 
 class Login extends Component {
     constructor(props) {
@@ -9,6 +10,11 @@ class Login extends Component {
     }
 
     componentDidMount() {
+        if (localStorage.getItem('token') !== null) {
+            console.log('hejhej')
+            
+        }
+        
         if (this.props.wantsToLogin) {
             this.userWantsToLogin();
         }
@@ -41,13 +47,14 @@ class Login extends Component {
         })
         .then(res => res.json())
         .then(function(data) {
+            //användaren e inloggad
             localStorage.clear();
             localStorage.setItem('token', data.access_token)
             localStorage.setItem('login', data.userData.login)
             localStorage.setItem('email', data.userData.email)
+
         })
-        
-        //window.history.pushState(null, null, '/login');
+
     }
 
     render() {        
