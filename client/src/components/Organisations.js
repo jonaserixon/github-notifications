@@ -16,9 +16,6 @@ class Organisations extends Component {
         }
     }
 
-    componentDidMount() {
-    }
-
     getOrgs() {
         let access_token = {
             token: localStorage.getItem('token')
@@ -37,28 +34,20 @@ class Organisations extends Component {
             let jsonOrgs = JSON.parse(data);
             let newOrgs = this.state.orgs.slice();
 
-            const renObjData = jsonOrgs.map(function(data, idx) {
-                return <p key={idx}>{data}</p>;
-            });
-    
-            if (renObjData[0] != null) {
-                for (let i = 0; i < renObjData.length; i++) {
-                    newOrgs.push(
-                    <div className="org"> 
-                        <Link to={"/organisations/" + renObjData[i].props.children.login}>
-                            <p>{renObjData[i].props.children.login}</p> 
-                            <img src={renObjData[i].props.children.avatar_url} alt="profile of user" />
+            for (let i = 0; i < jsonOrgs.length; i++) {
+                newOrgs.push(
+                    <div className="org">
+                        <Link to={"/organisations/" + jsonOrgs[i].login}>
+                            <p>{jsonOrgs[i].login}</p> 
+                            <img src={jsonOrgs[i].avatar_url} alt="profile of user" />
                         </Link> 
                     </div>
-                    )
-                }
+                )
             }
 
             this.setState({orgs: newOrgs});
         }.bind(this))
     }
-
-    
 
     render() {
         return (

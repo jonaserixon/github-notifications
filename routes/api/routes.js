@@ -3,6 +3,8 @@
 const router = require("express").Router();
 const request = require('request');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+
 
 const GIT_API_URL='https://api.github.com';
 
@@ -128,7 +130,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                         "*",
                     ],
                     "config": {
-                        "url": "http://45e10d00.ngrok.io/hook",
+                        "url": "http://8f19f39f.ngrok.io/hook",
                         "content_type": "json"
                     }
                 }
@@ -204,16 +206,13 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                             for (let j = 0; j < hooksJson.length; j++) {
 
                                 if (hooksJson.length != undefined && hooksJson[j] != undefined) {
-                                    console.log(hooksJson[j]);
 
-                                    if (hooksJson[j].config.hasOwnProperty("user-subscription")) {
-                                        //EN USER SUBSCRIPTION HOOK
-                                        console.log('EN USER SUBSCRIPTION HOOK')
-                                    } else {
+                                    if (!hooksJson[j].config.hasOwnProperty("user-subscription")) {
+                                    
 
                                         //GÖR ALLA HOOKS TILL ACTIVE: FALSE
                                         request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[j].id, shouldBeActive: false }},
-                                            (error, res, body) => {
+                                            (error, response, body) => {
 
                                                 let options = { uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
 
@@ -221,19 +220,16 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                                                 request(options, (error, response, body) => {    
                                                     
                                                     if (!error && response.statusCode == 200 && JSON.parse(body)[0] != undefined) {
-                                                                                                                                        //Enable notifications på organizationen genom active: true i patch
-                                                                                                                                        //gör en patch request o ändra active till true
+                                                        //Enable notifications på organizationen genom active: true i patch
+                                                        //gör en patch request o ändra active till true
                                                         request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token, hook_id: JSON.parse(body)[0].id, shouldBeActive: true }},
-                                                            (error, res, body) => {
-                                                                //console.log('nu är hooken active')
+                                                            (error, response, body) => {
+                                                                if (!error) { 
+                                                                    // res.json({message: "successfully toggled github hooks"}); 
+                                                                }
                                                             }
                                                         );
-
-                                                        //res.json(body);
-
-                                                    } else {
-                                                        console.log('ett stort fel jao hehe');
-                                                    }
+                                                    } 
                                                 })
                                             }
                                         );
@@ -251,7 +247,6 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
 
     router.post('/hook', (req, res) => {
-        console.log('POST HOOKAH');
         let json = JSON.stringify(req.body);
 
         let event_id = req.headers['x-github-delivery'];
@@ -356,41 +351,137 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
         });
     })
 
-
-
     router.post('/api/subscribe-to-event', (req, res) => {
         let token = req.body.token;
         let selectedOrg = req.body.selectedOrg;
         let selectedEvent = req.body.selectedEvent;
-        
+
+        //hämta alla orgs
         let options = {
             uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'User-Agent': 'jonne',
                 'Content-Type': 'application/json'
-            },
-            json: {
-                "name": "web",
-                "active": true,
-                "events": [
-                    selectedEvent,
-                ],
-                "config": {
-                    "url": "http://45e10d00.ngrok.io/hook",
-                    "content_type": "json",
-                    "user-subscription": true
-                }
             }
         };
     
-        request(options, (error, response, body) => {    
-            if (!error && response.statusCode == 200) {
-                res.json(body);
+        request(options, (error, response, body) => {
+            if (!error && response.statusCode == 200) {   
+                let hooksJson = JSON.parse(body);
+
+                    let options = {
+                        uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
+                        method: 'POST',
+                        headers: {
+                            'User-Agent': 'jonne',
+                            'Content-Type': 'application/json'
+                        },
+                        json: {
+                            "name": "web",
+                            "active": true,
+                            "events": [
+                                selectedEvent,
+                            ],
+                            "config": {
+                                "url": "http://8f19f39f.ngrok.io/user-subscription-email",
+                                "content_type": "json",
+                                "user-subscription": true
+                            }
+                        }
+                    };
+                
+                    request(options, (error, response, body) => {    
+                        if (!error && response.statusCode == 200) {
+                            res.json(body);
+                        } else {
+                            res.json({message: 'error typ'})
+                        }
+                    })
             } else {
                 res.json({message: 'error typ'})
             }
         })
+    })
+
+
+    router.post('/api/unsubscribe-to-event', (req, res) => {
+        let token = req.body.token;
+        let selectedOrg = req.body.selectedOrg;
+        let selectedEvent = req.body.selectedEvent;
+
+        let options = {
+            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'jonne',
+                'Content-Type': 'application/json'
+            }
+        };
+    
+        request(options, (error, response, body) => {
+            if (!error && response.statusCode == 200) {   
+                let hooksJson = JSON.parse(body);
+
+                for (let i = 0; i < hooksJson.length; i++) {
+
+                    if (hooksJson[i].config.hasOwnProperty("user-subscription")) {
+                        let options = {
+                            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks/' + hooksJson[i].id + '?access_token=' + token,
+                            method: 'DELETE',
+                            headers: {
+                                'User-Agent': 'jonne',
+                                'Content-Type': 'application/json'
+                            }
+                        };
+                    
+                        request(options, (error, response, body) => {    
+                            if (!error && response.statusCode == 200) {
+                                res.json(body);
+                            } else {
+                                res.json({message: 'error typ'})
+                            }
+                        })
+                    }
+                }
+            }
+        })
+    })
+
+
+    router.post('/user-subscription-email', (req, res) => {
+        let json = JSON.stringify(req.body);
+
+        let message = '';
+
+        if (req.body.repository != undefined) {
+            message = 'You have a new ' + req.headers['x-github-event'] + '-event in ' + req.body.organization.login + '/' + req.body.repository.name + ' from ' + req.body.sender.login + '!\n' + req.body.repository.html_url;
+        } else {
+
+        }
+
+        var smtpTransport = nodemailer.createTransport({
+            service: "Gmail",  
+            auth: {
+                user: "killen1dv612@gmail.com",
+                pass: "norrliden"
+            }
+        });
+         
+        let options = {
+            from: "killen1dv612@gmail.com", 
+            to: "x.jonaz@gmail.com",
+            subject: "New Github Notification", 
+            text: message 
+        }
+
+        smtpTransport.sendMail(options, (error, response) => {  
+            if (error){
+                res.json({message: error})
+            } else {
+                res.json({message: 'success'})
+            }        
+        });
     })
 
     return router;

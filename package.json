@@ -22,6 +22,7 @@
     "create-react-app": "^1.5.2",
     "express": "^4.16.2",
     "mongoose": "^5.0.7",
+    "nodemailer": "^4.6.2",
     "nodemon": "^1.15.1",
     "passport": "^0.4.0",
     "passport-github2": "^0.1.11",

@@ -17,22 +17,11 @@ class App extends Component {
         this.state = {
             redirect: false,
             isLoggedIn: false,
-            showOrgButton: ''
         };
-
-        // this.logout = this.logout.bind(this);
     }
 
     componentDidMount() {
-        if (localStorage.getItem('token') !== null) {
-            this.setState({showOrgButton: <Link to="organisations" >Organisations</Link>}, () => {
-                console.log('en orgs länk')
-            });
-        } else {
-            this.setState({showOrgButton: ''}, () => {
-                console.log('ingen orgs länk')
-            });
-        }
+        
     }
 
     logout() {
@@ -43,9 +32,7 @@ class App extends Component {
     }
 
     login() {
-        this.setState({isLoggedIn: true}, () => {
-
-        })
+        this.setState({isLoggedIn: true})
     }
 
     updateUserLastActive() {
@@ -66,8 +53,7 @@ class App extends Component {
     render() {
         if (this.state.redirect) {
             this.setState({redirect: false}, () => {
-                console.log('has redirected');
-                //window.history.pushState(null, null, '/');
+                
             });
         }
 

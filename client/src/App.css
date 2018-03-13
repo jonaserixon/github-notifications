@@ -2,7 +2,7 @@
 .App {
     background-color: lightgray;
     width: 1000px;
-    min-height: 800px;
+    /* min-height: 800px; */
     margin:  auto;
 }
 
@@ -17,7 +17,6 @@
 
 
 .Organisations {
-    background-color: pink;
     width: 120px;
 }
 
@@ -40,13 +39,14 @@
 }
 
 .Notifications {
-    background-color: slategrey;
+    background-color: lightgray;
     /* float: right;
     margin-top: -500px; */
     border: 1px solid black;
-    padding: 3px;
     min-height: 700px;
-
+    width: 997px;
+    display: inline-block;
+    position: relative;
 }
 
 .notis {
@@ -54,8 +54,11 @@
     height: 100px;
     margin-bottom: 10px;
     background-color: lightblue;
-    border: 3px solid black;
+    border: 1px solid black;
+    border-radius: 5px;
     text-align: center;
+    /* float:left; */
+    margin: 5px;
 }
 
 .notis p {
@@ -71,8 +74,11 @@
     height: 100px;
     margin-bottom: 10px;
     background-color: lightpink;
-    border: 3px solid black;
+    border: 1px solid black;
+    border-radius: 5px;
     text-align: center;
+    
+    margin: 5px;
 }
 
 .unread-notification p {
@@ -86,8 +92,10 @@
     border: 2px solid black;
     border-radius: 5px;
     width: 200px;
-    float: right;
-    background-color: lightgray
+    position: absolute;
+    background-color: ghostwhite;
+    top: 5px;
+    right: 5px;
 }
 
 .input-option{

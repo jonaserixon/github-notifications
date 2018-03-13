@@ -141,7 +141,7 @@ class Notifications extends Component {
         console.log(this.state.value)
     }
 
-    handleClick() {
+    handleSubscribeClick() {
         console.log('form submitted with these values: ');
         console.log(this.state.value);
         console.log(this.state.selectedOrg);
@@ -169,34 +169,55 @@ class Notifications extends Component {
 
     }
 
+    handleUnsubscribeClick() {
+        let options = {
+            token: localStorage.getItem('token'),
+            selectedOrg: this.state.selectedOrg,
+            selectedEvent: this.state.value
+        }
+
+        fetch('/api/unsubscribe-to-event',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+
+        })
+    }
+
     presentSubscriptionOptions() {
         let subscriptionOptions = 
+            <div id='subscription-options'>
+                <h3>Subscribe to event</h3>
 
-        <div id='subscription-options'>
-            <h3>Subscribe to event</h3>
+                    <div className='input-option'>
+                        <p>Issues:</p>
+                        <input type="radio" name="subscription" value="issues" onChange={this.handleChange.bind(this)}/>
+                    </div>
+                    
+                    <div className='input-option'>
+                        <p>Issue_comment:</p>
+                        <input type="radio" name="subscription" value="issue_comment" onChange={this.handleChange.bind(this)}/>
+                    </div>
 
-                <div className='input-option'>
-                    <p>Issues:</p>
-                    <input type="radio" name="subscription" value="issues" onChange={this.handleChange.bind(this)}/>
-                </div>
-                
-                <div className='input-option'>
-                    <p>Issue_comment:</p>
-                    <input type="radio" name="subscription" value="issue_comment" onChange={this.handleChange.bind(this)}/>
-                </div>
+                    <div className='input-option'>
+                        <p>Public:</p>
+                        <input type="radio" name="subscription" value="public" onChange={this.handleChange.bind(this)}/>
+                    </div>
 
-                <div className='input-option'>
-                    <p>Public:</p>
-                    <input type="radio" name="subscription" value="public" onChange={this.handleChange.bind(this)}/>
-                </div>
+                    <div className='input-option'>
+                        <p>Repository:</p>
+                        <input type="radio" name="subscription" value="repository" onChange={this.handleChange.bind(this)}/>
+                    </div>
 
-                <div className='input-option'>
-                    <p>Repository:</p>
-                    <input type="radio" name="subscription" value="repository" onChange={this.handleChange.bind(this)}/>
-                </div>
-
-                <button onClick={this.handleClick.bind(this)}>Subscribe</button>
-        </div>;
+                    <button onClick={this.handleSubscribeClick.bind(this)}>Subscribe</button>
+                    <button onClick={this.handleUnsubscribeClick.bind(this)}>Unsubscribe</button>
+            </div>;
 
         this.setState({subscriptionList: subscriptionOptions});
     }

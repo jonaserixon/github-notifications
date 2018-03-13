@@ -27,25 +27,26 @@ require('./config/database').initialize();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(cors());
 
 app.use('/', require('./routes/api/routes')(CLIENT_ID, CLIENT_SECRET, UserModel, io));
 
-app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-});
+// app.use(function (req, res, next) {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+//     res.header('Access-Control-Allow-Headers', 'Content-Type');
+//     next();
+// });
 
 
-io.on('connection', function(socket){
-    console.log('ws connected');
+// io.on('connection', function(socket){
+//     console.log('ws connected');
 
-    socket.on('disconnect', function(){
-        console.log('ws disconnected');
-    });
-});
+//     socket.on('disconnect', function(){
+//         console.log('ws disconnected');
+//     });
+// });
 
 
 server.listen(port, () => {
