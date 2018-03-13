@@ -1,7 +1,8 @@
 
 .App {
     background-color: lightgray;
-    width: 500px;
+    width: 1000px;
+    min-height: 800px;
     margin:  auto;
 }
 
@@ -44,18 +45,35 @@
     margin-top: -500px; */
     border: 1px solid black;
     padding: 3px;
-    min-height: 480px;
+
 }
 
 .notis {
-    width: 150px;
+    width: 250px;
     height: 100px;
     margin-bottom: 10px;
-    background-color: ghostwhite;
+    background-color: lightblue;
     border: 3px solid black;
     text-align: center;
 }
 
 .notis p {
+    margin:0;
+}
+
+#unread-notis {
+    
+}
+
+.unread-notification {
+    width: 250px;
+    height: 100px;
+    margin-bottom: 10px;
+    background-color: lightpink;
+    border: 3px solid black;
+    text-align: center;
+}
+
+.unread-notification p {
     margin:0;
 }

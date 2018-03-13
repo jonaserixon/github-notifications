@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const GIT_API_URL='https://api.github.com';
 
 
-module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
+module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
     router.post('/api/github/auth', (req, res) => {
         let githubCode = req.body.code;
@@ -20,7 +20,8 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
                 "Content-Type": "application/json"
             }
         };
-    
+        
+        //Get access token
         request(options, (error, response, body) => {
             if (!error && response.statusCode == 200) {
                 let access_token = body.substring(13, 53);
@@ -33,7 +34,8 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
                         'Content-Type': 'application/json'
                     }
                 };
-            
+                
+                //Store auth user in database
                 request(options, (error, response, body) => {
                     if (!error && response.statusCode == 200) {
                         let data = JSON.parse(body)
@@ -243,45 +245,26 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
         let event_id = req.headers['x-github-delivery'];
         let event_type = req.headers['x-github-event'];
 
-        console.log(event_id)
-
-        EventModel.findOne({event_id}, function(err, doc) {
-            console.log(doc);
-
-            let eventData = {
-                event_id: event_id,
-                event_type: event_type,
-            }
-
-            if (err) {
-                console.log('spara de lille eventet va')
-                let newEvent = new EventModel(eventData);
-                newEvent.save((err, doc) => {
-                    if (err) {
-                        res.status(500).json(error);
-                    }
-
-                    console.log('success');
-                    console.log(doc);
-                })
-            } else {
-                console.log('eventet fanns tydligen redan i dbEN ')
-            }
-        })
-        
-
-        //Spara event i databasen
-        //Skicka ut till klienten genom socket
-
-        console.log();
-        
-        if (req.body.issue == undefined) {
-
+        if (req.body.repository != undefined) {
+            io.emit('notiser',
+                {
+                    event_type: req.headers['x-github-event'],
+                    sender: req.body.sender.login,
+                    repository: req.body.repository.name,
+                    html_url: req.body.repository.html_url
+                }
+            )
         } else {
-            // io.emit('notiser',
-            //     {data: req.body}
-            // )
+            io.emit('notiser',
+                {
+                    event_type: req.headers['x-github-event'],
+                    sender: req.body.sender.login,
+                }
+            )
         }
+      
+        
+        
 
         res.json({message: 'här är din lille hook typ'});
     })
