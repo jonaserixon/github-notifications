@@ -45,6 +45,7 @@
     margin-top: -500px; */
     border: 1px solid black;
     padding: 3px;
+    min-height: 700px;
 
 }
 
@@ -76,4 +77,20 @@
 
 .unread-notification p {
     margin:0;
+}
+
+
+
+#subscription-options {
+    text-align: center;
+    border: 2px solid black;
+    border-radius: 5px;
+    width: 200px;
+    float: right;
+    background-color: lightgray
+}
+
+.input-option{
+    margin: 0;
+    border-bottom: 1px solid slategray;
 }

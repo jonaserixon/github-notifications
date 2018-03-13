@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Link, Route, Switch, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 class Organisations extends Component {
     constructor() {
@@ -43,12 +43,11 @@ class Organisations extends Component {
     
             if (renObjData[0] != null) {
                 for (let i = 0; i < renObjData.length; i++) {
-                    newOrgs.push
-                    (
+                    newOrgs.push(
                     <div className="org"> 
                         <Link to={"/organisations/" + renObjData[i].props.children.login}>
                             <p>{renObjData[i].props.children.login}</p> 
-                            <img src={renObjData[i].props.children.avatar_url} />
+                            <img src={renObjData[i].props.children.avatar_url} alt="profile of user" />
                         </Link> 
                     </div>
                     )

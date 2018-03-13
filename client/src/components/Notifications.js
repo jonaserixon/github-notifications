@@ -7,7 +7,9 @@ class Notifications extends Component {
         this.state = {
             selectedOrg: '',
             notifications: [],
-            unreadNotifications: []
+            unreadNotifications: [],
+            subscriptionList: '',
+            value: ''
         }
 
     }
@@ -23,6 +25,7 @@ class Notifications extends Component {
             console.log(this.state.selectedOrg)
             this.enableNotifications();
             this.getOrgEvents();
+            this.presentSubscriptionOptions();
         })
     }
 
@@ -107,7 +110,7 @@ class Notifications extends Component {
         this.socket.on('notiser', function(data){
             console.log(data)
 
-            if (data.repository != undefined) {
+            if (data.repository !== undefined) {
                 newNotifications.push(
                     <div className="notis"> 
                         <p>New</p>
@@ -133,6 +136,71 @@ class Notifications extends Component {
         }.bind(this));
     }
 
+    handleChange(event) {
+        this.setState({value: event.target.value});
+        console.log(this.state.value)
+    }
+
+    handleClick() {
+        console.log('form submitted with these values: ');
+        console.log(this.state.value);
+        console.log(this.state.selectedOrg);
+
+        //Skicka request till servern och skapa en hook för det valda eventet.
+
+        let options = {
+            token: localStorage.getItem('token'),
+            selectedOrg: this.state.selectedOrg,
+            selectedEvent: this.state.value
+        }
+
+        fetch('/api/subscribe-to-event',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+
+        })
+
+    }
+
+    presentSubscriptionOptions() {
+        let subscriptionOptions = 
+
+        <div id='subscription-options'>
+            <h3>Subscribe to event</h3>
+
+                <div className='input-option'>
+                    <p>Issues:</p>
+                    <input type="radio" name="subscription" value="issues" onChange={this.handleChange.bind(this)}/>
+                </div>
+                
+                <div className='input-option'>
+                    <p>Issue_comment:</p>
+                    <input type="radio" name="subscription" value="issue_comment" onChange={this.handleChange.bind(this)}/>
+                </div>
+
+                <div className='input-option'>
+                    <p>Public:</p>
+                    <input type="radio" name="subscription" value="public" onChange={this.handleChange.bind(this)}/>
+                </div>
+
+                <div className='input-option'>
+                    <p>Repository:</p>
+                    <input type="radio" name="subscription" value="repository" onChange={this.handleChange.bind(this)}/>
+                </div>
+
+                <button onClick={this.handleClick.bind(this)}>Subscribe</button>
+        </div>;
+
+        this.setState({subscriptionList: subscriptionOptions});
+    }
+
     render() {
         return (
             <div className="Notifications">
@@ -141,6 +209,8 @@ class Notifications extends Component {
                 <div id="unread-notis">
                     {this.state.unreadNotifications}
                 </div>
+
+                <div>{this.state.subscriptionList}</div>
             </div>
         );
     }

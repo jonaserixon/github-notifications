@@ -198,35 +198,47 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                         //Hämta alla hooks tillhörande organizationerna
                         request(options, (error, response, body) => {    
                             let hooksJson = JSON.parse(body);
-    
-                            if (hooksJson.length != undefined && hooksJson[0] != undefined) {
 
-                                //GÖR ALLA HOOKS TILL ACTIVE: FALSE
-                                request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[0].id, shouldBeActive: false }},
-                                    (error, res, body) => {
+                            //hooksJson.config.hasOwnProperty("ydata");
+                            
+                            for (let j = 0; j < hooksJson.length; j++) {
 
-                                        let options = { uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
+                                if (hooksJson.length != undefined && hooksJson[j] != undefined) {
+                                    console.log(hooksJson[j]);
 
-                                        //Göra den selectade organizationen aktiv för hooks
-                                        request(options, (error, response, body) => {    
-                                            
-                                            if (!error && response.statusCode == 200 && JSON.parse(body)[0] != undefined) {
-                                                                                                                                //Enable notifications på organizationen genom active: true i patch
-                                                                                                                                //gör en patch request o ändra active till true
-                                                request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token, hook_id: JSON.parse(body)[0].id, shouldBeActive: true }},
-                                                    (error, res, body) => {
-                                                        //console.log('nu är hooken active')
+                                    if (hooksJson[j].config.hasOwnProperty("user-subscription")) {
+                                        //EN USER SUBSCRIPTION HOOK
+                                        console.log('EN USER SUBSCRIPTION HOOK')
+                                    } else {
+
+                                        //GÖR ALLA HOOKS TILL ACTIVE: FALSE
+                                        request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[j].id, shouldBeActive: false }},
+                                            (error, res, body) => {
+
+                                                let options = { uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
+
+                                                //Göra den selectade organizationen aktiv för hooks
+                                                request(options, (error, response, body) => {    
+                                                    
+                                                    if (!error && response.statusCode == 200 && JSON.parse(body)[0] != undefined) {
+                                                                                                                                        //Enable notifications på organizationen genom active: true i patch
+                                                                                                                                        //gör en patch request o ändra active till true
+                                                        request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token, hook_id: JSON.parse(body)[0].id, shouldBeActive: true }},
+                                                            (error, res, body) => {
+                                                                //console.log('nu är hooken active')
+                                                            }
+                                                        );
+
+                                                        //res.json(body);
+
+                                                    } else {
+                                                        console.log('ett stort fel jao hehe');
                                                     }
-                                                );
-
-                                                //res.json(body);
-
-                                            } else {
-                                                console.log('ett stort fel jao hehe');
+                                                })
                                             }
-                                        })
+                                        );
                                     }
-                                );
+                                }
                             }
                         })
                     }
@@ -342,6 +354,43 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                 res.json({message: 'success'});
             });
         });
+    })
+
+
+
+    router.post('/api/subscribe-to-event', (req, res) => {
+        let token = req.body.token;
+        let selectedOrg = req.body.selectedOrg;
+        let selectedEvent = req.body.selectedEvent;
+        
+        let options = {
+            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
+            method: 'POST',
+            headers: {
+                'User-Agent': 'jonne',
+                'Content-Type': 'application/json'
+            },
+            json: {
+                "name": "web",
+                "active": true,
+                "events": [
+                    selectedEvent,
+                ],
+                "config": {
+                    "url": "http://45e10d00.ngrok.io/hook",
+                    "content_type": "json",
+                    "user-subscription": true
+                }
+            }
+        };
+    
+        request(options, (error, response, body) => {    
+            if (!error && response.statusCode == 200) {
+                res.json(body);
+            } else {
+                res.json({message: 'error typ'})
+            }
+        })
     })
 
     return router;

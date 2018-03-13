@@ -20,7 +20,7 @@ class App extends Component {
             showOrgButton: ''
         };
 
-        this.logout = this.logout.bind(this);
+        // this.logout = this.logout.bind(this);
     }
 
     componentDidMount() {
@@ -37,8 +37,8 @@ class App extends Component {
 
     logout() {
         this.setState({redirect: true, isLoggedIn: false}, () => {
-            localStorage.clear();
             this.updateUserLastActive();
+            localStorage.clear();
         });
     }
 
@@ -78,7 +78,7 @@ class App extends Component {
                 <div className="Navigation">
                     <Link to="/" >Home</Link>
                     <Link to="/login" onClick={this.login} >Login</Link>
-                    <Link to="#" onClick={this.logout} >Logout</Link>
+                    <Link to="#" onClick={this.logout.bind(this)} >Logout</Link>
                     <Link to="/organisations" >Organisations</Link>
                 </div>
 
