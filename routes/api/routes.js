@@ -126,7 +126,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
                         "*",
                     ],
                     "config": {
-                        "url": "http://ca30d381.ngrok.io/hook",
+                        "url": "http://45e10d00.ngrok.io/hook",
                         "content_type": "json"
                     }
                 }
@@ -293,15 +293,8 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
         let username = req.body.login;
         let selectedOrg = req.body.selectedOrg;
 
+        let unreadNotifications = [];
 
-        UserModel.findOne({login: username}, function(err, user) {
-            if (err) return handleError(err);
-        
-            console.log(user.last_active);
-        });
-
-
-        
         let options = {
             uri: GIT_API_URL + '/users/' + username + '/events/orgs/' + selectedOrg + '?access_token=' + token,
             method: 'GET',
@@ -311,21 +304,44 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, EventModel, io) {
             }
         };
 
+        UserModel.findOne({login: username}, function(err, user) {
+            if (err) { console.log(err); }
+
+            let userLastActive = new Date(user.last_active.toISOString().substring(0,19)+'Z');
+
+            request(options, (error, response, body) => {
+                if (!error && response.statusCode == 200) {    
+                    let jsonBody = JSON.parse(body);
+    
+                    for(let i = 0; i < jsonBody.length; i++) {
+                        let event_created_date = new Date(jsonBody[i].created_at);
+
+                        if (userLastActive < event_created_date) {
+                            let eventData = {
+                                event_type: jsonBody[i].type.replace('Event', ''),
+                                event_repo: jsonBody[i].repo.name,
+                                event_id: jsonBody[i].id
+                            }
+
+                            unreadNotifications.push(eventData);
+                        }
+                    }
+
+                    res.json(unreadNotifications);
+                }
+    
+                if (error) {
+                    res.json({message: error})
+                }
+            })
+        });
+
+        
+        
+
         //Jämför org events created_at med användarens last_active för att avgöra vilka notifikationer som är "nya"
     
-        // request(options, (error, response, body) => {
-        //     if (!error && response.statusCode == 200) {    
-        //         let jsonBody = JSON.parse(body);
-
-        //         for(let i = 0; i < 3; i++) {
-        //             console.log(jsonBody[i].id)
-        //             console.log(jsonBody[i].type)
-        //             console.log(jsonBody[i].created_at)
-        //         }
-        //     }
-
-        //     res.json({message: "success"});
-        // })
+        
     })
 
 

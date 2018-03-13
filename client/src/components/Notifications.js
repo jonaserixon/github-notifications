@@ -6,7 +6,8 @@ class Notifications extends Component {
         super(props);
         this.state = {
             selectedOrg: '',
-            notifications: []
+            notifications: [],
+            unreadNotifications: []
         }
 
     }
@@ -48,6 +49,44 @@ class Notifications extends Component {
         .then(res => res.json())
         .then((data) => {
             //console.log(data)
+            let newNots = this.state.unreadNotifications.slice();
+            //let jsonNots = JSON.parse(data);
+            //newNots = JSON.parse(data);
+
+            
+
+            for (let i = 0; i < data.length; i++) {
+                
+                console.log(data[i].event_type);
+
+                newNots.push(
+                    <div className="unread-notification">
+                        <p>Type: {data[i].event_type}</p>
+                        <p>Repo: {data[i].event_repo}</p>
+                        <p>{data[i].event_id}</p>
+                    </div>
+                )
+            }
+
+            // const renObjData = jsonNots.map(function(data, idx) {
+            //     return <p key={idx}>{data}</p>;
+            // });
+    
+            // if (renObjData[0] != null) {
+            //     for (let i = 0; i < renObjData.length; i++) {
+            //         newNots.push
+            //         (
+            //         <div className="nots"> 
+            //             <p>{renObjData[i].props.children.login}</p> 
+            //             <img src={renObjData[i].props.children.avatar_url} />
+            //         </div>
+            //         )
+            //     }
+            // }
+
+            this.setState({unreadNotifications: newNots}, () => {
+                console.log(this.state.unreadNotifications);
+            })
         })
     }
 
@@ -102,6 +141,7 @@ class Notifications extends Component {
             <div className="Notifications">
                 <div>{this.state.selectedOrg}</div>
                 <div>{this.state.notifications}</div>
+                <div>{this.state.unreadNotifications}</div>
             </div>
         );
     }
