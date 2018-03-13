@@ -8,11 +8,13 @@ class Notifications extends Component {
             selectedOrg: '',
             notifications: []
         }
+
     }
 
     componentWillMount() {
         if (localStorage.getItem('token') !== null) {
             this.getNotifications();
+            
         }
     }
 
@@ -20,6 +22,32 @@ class Notifications extends Component {
         this.setState({selectedOrg: window.location.href.substring(36, window.location.href.length)}, () => {
             console.log(this.state.selectedOrg)
             this.enableNotifications();
+            this.getOrgEvents();
+        })
+    }
+
+    
+
+    getOrgEvents() {
+        ///api/github/org-events
+
+        let options = {
+            token: localStorage.getItem('token'),
+            selectedOrg: this.state.selectedOrg,
+            login: localStorage.getItem('login')
+        }
+
+        fetch('/api/github/org-events',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+            //console.log(data)
         })
     }
 
