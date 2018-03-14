@@ -5,9 +5,7 @@ const request = require('request');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 
-
 const GIT_API_URL='https://api.github.com';
-
 
 module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
@@ -148,8 +146,6 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
 
     router.route('/api/github/hook') 
         .patch((req, res) => {
-            //gå igenom alla hooks och sätt dom till active: false
-
             let token = req.body.token;
             let selectedOrg = req.body.selectedOrg;
             let hook_id = req.body.hook_id;
@@ -181,7 +177,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
         })
 
 
-    //Steg 1: resetta alla org hooks till active: false och sedan kolla selected org och gör den till active.
+    //resetta alla org hooks till active: false och sedan kolla selected org och gör den till active.
     router.route('/api/github/handlehook') 
         .post((req, res) => {
             let token = req.body.token;
@@ -200,8 +196,6 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                         //Hämta alla hooks tillhörande organizationerna
                         request(options, (error, response, body) => {    
                             let hooksJson = JSON.parse(body);
-
-                            //hooksJson.config.hasOwnProperty("ydata");
                             
                             for (let j = 0; j < hooksJson.length; j++) {
 
@@ -224,9 +218,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                                                         //gör en patch request o ändra active till true
                                                         request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token, hook_id: JSON.parse(body)[0].id, shouldBeActive: true }},
                                                             (error, response, body) => {
-                                                                if (!error) { 
-                                                                    // res.json({message: "successfully toggled github hooks"}); 
-                                                                }
+                                                                if (!error) {}
                                                             }
                                                         );
                                                     } 
@@ -269,14 +261,11 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                 }
             )
         }
-      
-        
-        
-
         res.json({message: 'här är din lille hook typ'});
     })
 
 
+    //Check if unread or read notification
     router.post('/api/github/org-events', (req, res) => {
 
         let token = req.body.token;
@@ -297,57 +286,54 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
         UserModel.findOne({login: username}, function(err, user) {
             if (err) { console.log(err); }
 
-            let userLastActive = new Date(user.last_active.toISOString().substring(0,19)+'Z');
+            if (user) {
+                let userLastActive = new Date(user.last_active.toISOString().substring(0,19)+'Z');
 
-            request(options, (error, response, body) => {
-                if (!error && response.statusCode == 200) {    
-                    let jsonBody = JSON.parse(body);
+                request(options, (error, response, body) => {
+                    if (!error && response.statusCode == 200) {    
+                        let jsonBody = JSON.parse(body);
+        
+                        for(let i = 0; i < jsonBody.length; i++) {
+                            let event_created_date = new Date(jsonBody[i].created_at);
     
-                    for(let i = 0; i < jsonBody.length; i++) {
-                        let event_created_date = new Date(jsonBody[i].created_at);
-
-                        if (userLastActive < event_created_date) {
-                            let eventData = {
-                                event_type: jsonBody[i].type.replace('Event', ''),
-                                event_repo: jsonBody[i].repo.name,
-                                event_id: jsonBody[i].id
+                            if (userLastActive < event_created_date) {
+                                let eventData = {
+                                    event_type: jsonBody[i].type.replace('Event', ''),
+                                    event_repo: jsonBody[i].repo.name,
+                                    event_id: jsonBody[i].id
+                                }
+    
+                                unreadNotifications.push(eventData);
                             }
-
-                            unreadNotifications.push(eventData);
                         }
+    
+                        res.json(unreadNotifications);
                     }
-
-                    res.json(unreadNotifications);
-                }
-    
-                if (error) {
-                    res.json({message: error})
-                }
-            })
+        
+                    if (error) {
+                        res.json({message: error})
+                    }
+                })
+            }
         });
-
-        
-        
-
-        //Jämför org events created_at med användarens last_active för att avgöra vilka notifikationer som är "nya"
-    
-        
     })
 
 
 
     router.post('/api/update-user-last-active', (req, res) => {
         UserModel.findOne({login: req.body.login}, function(err, user) {
-            if (err) return handleError(err);
-        
-            user.last_active = Date.now();
+            if (err) console.log(err);
 
-            user.save(function (err, updatedUser) {
-                if (err) { 
-                    return handleError(err) 
-                }
-                res.json({message: 'success'});
-            });
+            if (user) {
+                user.last_active = Date.now();
+
+                user.save(function (err, updatedUser) {
+                    if (err) { 
+                        console.log(err) 
+                    }
+                    res.json({message: 'success'});
+                });
+            }
         });
     })
 
@@ -384,7 +370,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                                 selectedEvent,
                             ],
                             "config": {
-                                "url": "http://8f19f39f.ngrok.io/user-subscription-email",
+                                "url": "http://8f19f39f.ngrok.io/user-subscription-email/" + req.body.user_email,
                                 "content_type": "json",
                                 "user-subscription": true
                             }
@@ -392,7 +378,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                     };
                 
                     request(options, (error, response, body) => {    
-                        if (!error && response.statusCode == 200) {
+                        if (!error) {
                             res.json(body);
                         } else {
                             res.json({message: 'error typ'})
@@ -448,16 +434,14 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
         })
     })
 
-
-    router.post('/user-subscription-email', (req, res) => {
-        let json = JSON.stringify(req.body);
-
+    //Email user subscription notifications
+    router.post('/user-subscription-email/:email', (req, res) => {
         let message = '';
 
         if (req.body.repository != undefined) {
             message = 'You have a new ' + req.headers['x-github-event'] + '-event in ' + req.body.organization.login + '/' + req.body.repository.name + ' from ' + req.body.sender.login + '!\n' + req.body.repository.html_url;
         } else {
-
+            message = 'You have a new ' + req.headers['x-github-event'] + '-event from ' + req.body.sender.login + '.';
         }
 
         var smtpTransport = nodemailer.createTransport({
@@ -470,7 +454,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
          
         let options = {
             from: "killen1dv612@gmail.com", 
-            to: "x.jonaz@gmail.com",
+            to: req.params.email,
             subject: "New Github Notification", 
             text: message 
         }
@@ -482,6 +466,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                 res.json({message: 'success'})
             }        
         });
+        res.json({message: 'success'})
     })
 
     return router;

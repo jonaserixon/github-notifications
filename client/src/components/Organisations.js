@@ -5,8 +5,7 @@ class Organisations extends Component {
     constructor() {
         super();
         this.state = {
-            orgs: [],
-            notifications: []
+            orgs: []
         }
     }
 
@@ -39,7 +38,7 @@ class Organisations extends Component {
                     <div className="org">
                         <Link to={"/organisations/" + jsonOrgs[i].login}>
                             <p>{jsonOrgs[i].login}</p> 
-                            <img src={jsonOrgs[i].avatar_url} alt="profile of user" />
+                            <img src={jsonOrgs[i].avatar_url} alt="profile of org" />
                         </Link> 
                     </div>
                 )

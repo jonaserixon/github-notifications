@@ -10,8 +10,7 @@ class Login extends Component {
 
     componentDidMount() {
         if (localStorage.getItem('token') !== null) {
-            console.log('hejhej')
-            
+            //            
         }
         
         if (this.props.wantsToLogin) {
@@ -26,9 +25,7 @@ class Login extends Component {
     userWantsToLogin() {
         const client_id = '3d47ed6a79c582546a56';
         const redirect_uri = 'http://localhost:3000/callback';
-
         window.location = 'https://github.com/login/oauth/authorize?client_id=' + client_id + '&scope=admin:org_hook%20user%20read:org%20repo&&redirect_uri=' + redirect_uri;
-        //Skicka upp ett state till en parent component och tala om att man nu är inloggad och därefter hämta ner github data osv. därifrån
     }
 
     getAccessToken() {

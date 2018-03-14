@@ -11,7 +11,6 @@ class Notifications extends Component {
             subscriptionList: '',
             value: ''
         }
-
     }
 
     componentWillMount() {
@@ -22,7 +21,6 @@ class Notifications extends Component {
 
     componentDidMount() {
         this.setState({selectedOrg: window.location.href.substring(36, window.location.href.length)}, () => {
-            console.log(this.state.selectedOrg)
             this.enableNotifications();
             this.getOrgEvents();
             this.presentSubscriptionOptions();
@@ -32,8 +30,6 @@ class Notifications extends Component {
     
 
     getOrgEvents() {
-        ///api/github/org-events
-
         let options = {
             token: localStorage.getItem('token'),
             selectedOrg: this.state.selectedOrg,
@@ -50,17 +46,9 @@ class Notifications extends Component {
         })
         .then(res => res.json())
         .then((data) => {
-            //console.log(data)
             let newNots = this.state.unreadNotifications.slice();
-            //let jsonNots = JSON.parse(data);
-            //newNots = JSON.parse(data);
-
-            
-
             for (let i = 0; i < data.length; i++) {
                 
-                console.log(data[i].event_type);
-
                 newNots.push(
                     <div className="unread-notification">
                         <p>Unread</p>
@@ -71,9 +59,7 @@ class Notifications extends Component {
                 )
             }
 
-            this.setState({unreadNotifications: newNots}, () => {
-                console.log(this.state.unreadNotifications);
-            })
+            this.setState({unreadNotifications: newNots})
         })
     }
 
@@ -97,7 +83,6 @@ class Notifications extends Component {
         })
         .then(res => res.json())
         .then((data) => {
-            console.log('enablenots(): ' + data)
         })
     }
 
@@ -108,8 +93,6 @@ class Notifications extends Component {
         this.socket = io('http://localhost:8000');
 
         this.socket.on('notiser', function(data){
-            console.log(data)
-
             if (data.repository !== undefined) {
                 newNotifications.push(
                     <div className="notis"> 
@@ -129,29 +112,22 @@ class Notifications extends Component {
                     </div>
                 )
             }
-
-            
-
             this.setState({notifications: newNotifications});
         }.bind(this));
     }
 
     handleChange(event) {
         this.setState({value: event.target.value});
-        console.log(this.state.value)
     }
 
     handleSubscribeClick() {
-        console.log('form submitted with these values: ');
-        console.log(this.state.value);
-        console.log(this.state.selectedOrg);
-
         //Skicka request till servern och skapa en hook för det valda eventet.
 
         let options = {
             token: localStorage.getItem('token'),
             selectedOrg: this.state.selectedOrg,
-            selectedEvent: this.state.value
+            selectedEvent: this.state.value,
+            user_email: localStorage.getItem('email')
         }
 
         fetch('/api/subscribe-to-event',{

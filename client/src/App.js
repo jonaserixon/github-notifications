@@ -72,7 +72,7 @@ class App extends Component {
                     <Route exact path='/' component={() => <HomePage />} />
                     <Route path='/login' component={() => <Login wantsToLogin={true} />} />
                     <Route path='/callback' component={() => <Login githubCallback={true} />} />
-                    <Route exact path='/hook' component={() => <Hook />} />
+                    {/* <Route exact path='/hook' component={() => <Hook />} /> */}
                     <Route exact path='/organisations' component={() => <Organisations />} />
 
                     <Route path='/organisations/:org' component={() => <Notifications />} />

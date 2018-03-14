@@ -13,8 +13,6 @@ class Hook extends Component {
             token: localStorage.getItem('token')
         }
 
-        console.log(access_token);
-
         fetch('/api/github/hook',{
             body: JSON.stringify(access_token),
             method: 'POST',
