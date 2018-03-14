@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run:client": "cd client && npm run start",
-    "run:server": "nodemon server.js",
+    "client": "cd client && npm run start",
+    "server": "nodemon server.js",
     "chaos": "concurrently --kill-others \"npm run client\" \"npm run server\"",
     "yolo": "npm-run-all -p run:client run:server"
   },

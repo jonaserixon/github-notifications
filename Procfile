@@ -1,1 +1,1 @@
-web: npm run run:server & npm run run:client
+web: npm run chaos
