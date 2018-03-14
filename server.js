@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const socket = require('socket.io');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -17,11 +18,6 @@ let User = require('./models/User');
 let UserModel = mongoose.model('users-github');
 
 
-//Gör till env variablar
-const CLIENT_ID = '3d47ed6a79c582546a56';
-const CLIENT_SECRET = '81028b61f7d1bc565eab1d43f59f345393d11cb6';
-
-
 require('./config/database').initialize();
 
 app.use(bodyParser.json());
@@ -30,24 +26,7 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 app.use(cors());
 
-app.use('/', require('./routes/api/routes')(CLIENT_ID, CLIENT_SECRET, UserModel, io));
-
-// app.use(function (req, res, next) {
-//     res.header('Access-Control-Allow-Origin', '*');
-//     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-//     res.header('Access-Control-Allow-Headers', 'Content-Type');
-//     next();
-// });
-
-
-// io.on('connection', function(socket){
-//     console.log('ws connected');
-
-//     socket.on('disconnect', function(){
-//         console.log('ws disconnected');
-//     });
-// });
-
+app.use('/', require('./routes/api/routes')(UserModel, io));
 
 server.listen(port, () => {
     console.log("Express started on http://localhost:" + port);

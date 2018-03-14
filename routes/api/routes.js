@@ -7,13 +7,14 @@ const nodemailer = require('nodemailer');
 
 const GIT_API_URL='https://api.github.com';
 
-module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
+module.exports = function(UserModel, io) {
 
     router.post('/api/github/auth', (req, res) => {
         let githubCode = req.body.code;
-    
+        
+        
         let options = {
-            uri: 'https://github.com/login/oauth/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&code=' + githubCode,
+            uri: 'https://github.com/login/oauth/access_token?client_id=' + process.env['CLIENT_ID'] + '&client_secret=' + process.env['CLIENT_SECRET'] + '&code=' + githubCode,
             method: 'POST',
             headers: {
                 'User-Agent': 'jonne',
@@ -128,7 +129,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                         "*",
                     ],
                     "config": {
-                        "url": "http://8f19f39f.ngrok.io/hook",
+                        "url": process.env['NGROK_URL'] + "/hook",
                         "content_type": "json"
                     }
                 }
@@ -370,7 +371,7 @@ module.exports = function(CLIENT_ID, CLIENT_SECRET, UserModel, io) {
                                 selectedEvent,
                             ],
                             "config": {
-                                "url": "http://8f19f39f.ngrok.io/user-subscription-email/" + req.body.user_email,
+                                "url": process.env['NGROK_URL'] + "/user-subscription-email/" + req.body.user_email,
                                 "content_type": "json",
                                 "user-subscription": true
                             }
