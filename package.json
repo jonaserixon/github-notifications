@@ -7,8 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "cd client && npm run start",
     "server": "nodemon server.js",
-    "chaos": "concurrently --kill-others \"npm run client\" \"npm run server\"",
-    "yolo": "npm-run-all -p run:client run:server"
+    "chaos": "concurrently --kill-others \"npm run client\" \"npm run server\""
   },
   "repository": {
     "type": "git",
