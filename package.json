@@ -4,7 +4,11 @@
   "description": "1dv612 examination",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run:client": "cd client && npm run start",
+    "run:server": "nodemon server.js",
+    "chaos": "concurrently --kill-others \"npm run client\" \"npm run server\"",
+    "yolo": "npm-run-all -p run:client run:server"
   },
   "repository": {
     "type": "git",
@@ -24,9 +28,10 @@
     "mongoose": "^5.0.7",
     "nodemailer": "^4.6.2",
     "nodemon": "^1.15.1",
-    "passport": "^0.4.0",
-    "passport-github2": "^0.1.11",
     "request": "^2.83.0",
     "socket.io": "^2.0.4"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.1"
   }
 }
