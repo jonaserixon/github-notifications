@@ -4,7 +4,7 @@ class Login extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
+            isLoggedInYet: false
         }
     }
 
@@ -30,7 +30,7 @@ class Login extends Component {
 
     getAccessToken() {
         const callbackCode = {
-            code: window.location.href.substring(36, window.location.href.length)
+            code: window.location.href.substring(window.location.href.indexOf("=") + 1, window.location.href.length)
         }
 
         fetch('/api/github/auth',{
@@ -42,20 +42,27 @@ class Login extends Component {
             },
         })
         .then(res => res.json())
-        .then(function(data) {
+        .then((data) => {
             //användaren e inloggad
             localStorage.clear();
             localStorage.setItem('token', data.access_token)
             localStorage.setItem('login', data.userData.login)
-            localStorage.setItem('email', data.userData.email)
 
+            this.setState({isLoggedInYet: true});
         })
-
+        
     }
 
-    render() {        
+    render() {     
+        let welcomeMessage = '';
+
+        if (this.state.isLoggedInYet) {
+            welcomeMessage = 'Welcome, ' + localStorage.getItem('login') + '.';
+        }
+
         return (
             <div className="Login">
+                <p>{welcomeMessage}</p>
             </div>
         );
     }

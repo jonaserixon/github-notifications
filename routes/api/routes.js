@@ -9,9 +9,9 @@ const GIT_API_URL='https://api.github.com';
 
 module.exports = function(UserModel, io) {
 
+    //AUTHORIZE GITHUB USER AND STORE IN DB
     router.post('/api/github/auth', (req, res) => {
         let githubCode = req.body.code;
-        
         
         let options = {
             uri: 'https://github.com/login/oauth/access_token?client_id=' + process.env['CLIENT_ID'] + '&client_secret=' + process.env['CLIENT_SECRET'] + '&code=' + githubCode,
@@ -22,49 +22,15 @@ module.exports = function(UserModel, io) {
             }
         };
         
-        //Get access token
+        //Get access token and send to client
         request(options, (error, response, body) => {
             if (!error && response.statusCode == 200) {
                 let access_token = body.substring(13, 53);
-
-                let options = {
-                    uri: GIT_API_URL + '/user?access_token=' + access_token,
-                    method: 'GET',
-                    headers: {
-                        'User-Agent': 'jonne',
-                        'Content-Type': 'application/json'
-                    }
-                };
-                
-                //Store auth user in database
-                request(options, (error, response, body) => {
-                    if (!error && response.statusCode == 200) {
-                        let data = JSON.parse(body)
-
-                        let userData = {
-                            login: data.login,
-                            avatar_url: data.avatar_url,
-                            email: data.email,
-                            last_active: Date.now()
-                        }
-            
-                        UserModel.findOne({login: data.login}, function(err, doc) {
-                            if (doc == null) {
-                                let registerNewUser = new UserModel(userData);
-                                registerNewUser.save((err, doc) => {
-                                    if (err) {
-                                        res.status(500).json(error);
-                                    }
-                                })
-                            }
-                            
-                            res.json({access_token, userData});
-                        })
-                    }
-                });
+                storeUserInDatabaseThenSendDataToClient(access_token, res);
             }
         });
     })
+
 
     //Hämtar organizationer och sätter hooks på dom
     router.post('/api/orgs', (req, res) => {
@@ -86,182 +52,112 @@ module.exports = function(UserModel, io) {
 
                 for (let i = 0; i < jsonBody.length; i++) {
                 
-                    let options = { uri: GIT_API_URL + '/orgs/' + jsonBody[i].login + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
+                    let options = { 
+                        uri: GIT_API_URL + '/orgs/' + jsonBody[i].login + '/hooks?access_token=' + token, 
+                        method: 'GET', 
+                        headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }
+                    }
 
                     request(options, (error, response, body) => {    
 
-                        //Kolla om arrayen med hooks är tom eller inte
+                        //Kolla om arrayen med hooks är tom eller inte. Om inte så går det ej att sätta hooks (?)
                         if (body == '[]' || body.length <= 2 || JSON.parse(body).message == 'Not Found') {                                                     
                             request.post('http://localhost:8000/api/github/hook', { json: { selectedOrg: jsonBody[i].login, token: token }}, 
                                 (error, res, body) => {
-
+                                   //hooks är satta
                                 }
                             );
                         }
                     })
                 }
 
-                res.json(body);
-            } else {
-                res.json({message: 'error'})
+                return res.json(body);
+            } else if (error) {
+                return res.json({message: 'error'})
             }
         });
     })
 
 
-
-    router.route('/api/github/hook') 
-        .post((req, res) => {
-            let token = req.body.token;
-            let selectedOrg = req.body.selectedOrg;
-        
-            let options = {
-                uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
-                method: 'POST',
-                headers: {
-                    'User-Agent': 'jonne',
-                    'Content-Type': 'application/json'
-                },
-                json: {
-                    "name": "web",
-                    "active": false,
-                    "events": [
-                        "*",
-                    ],
-                    "config": {
-                        "url": process.env['NGROK_URL'] + "/hook",
-                        "content_type": "json"
-                    }
-                }
-            };
-        
-            request(options, (error, response, body) => {    
-                if (!error && response.statusCode == 200) {
-                    res.json(body);
-                } else {
-                    res.json({message: 'error typ'})
-                }
-            })
-        })
-
-
-    router.route('/api/github/hook') 
-        .patch((req, res) => {
-            let token = req.body.token;
-            let selectedOrg = req.body.selectedOrg;
-            let hook_id = req.body.hook_id;
-            let shouldBeActive = req.body.shouldBeActive;
-
-            let options = {
-                uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks/' + hook_id + '?access_token=' + token,
-                method: 'PATCH',
-                headers: {
-                    'User-Agent': 'jonne',
-                    'Content-Type': 'application/json'
-                },
-                json: {
-                    "name": "web",
-                    "active": shouldBeActive,
-                    "events": [
-                        "*",
-                    ]
-                }
-            };
-
-            request(options, (error, response, body) => {    
-                if (error) {
-                    res.json({message: 'error typ'})
-                } else {
-                    res.json(body);
-                }
-            })
-        })
-
-
-    //resetta alla org hooks till active: false och sedan kolla selected org och gör den till active.
-    router.route('/api/github/handlehook') 
-        .post((req, res) => {
-            let token = req.body.token;
-            let options = { uri: GIT_API_URL + '/user/orgs?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }};
-        
-            //Hämta användarens alla organizationer
-            request(options, (error, response, body) => {
-
-                if (!error && response.statusCode == 200) {    
-                    let orgsJson = JSON.parse(body);                    
-                    
-                    for (let i = 0; i < orgsJson.length; i++) {
-
-                        let options = {uri: GIT_API_URL + '/orgs/' + orgsJson[i].login + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }};
+    //Skapa en webhook på den valda organizationen
+    router.post(('/api/github/hook'), (req, res) => {
+        let token = req.body.token;
+        let selectedOrg = req.body.selectedOrg;
     
-                        //Hämta alla hooks tillhörande organizationerna
-                        request(options, (error, response, body) => {    
-                            let hooksJson = JSON.parse(body);
-                            
-                            for (let j = 0; j < hooksJson.length; j++) {
-
-                                if (hooksJson.length != undefined && hooksJson[j] != undefined) {
-
-                                    if (!hooksJson[j].config.hasOwnProperty("user-subscription")) {
-                                    
-
-                                        //GÖR ALLA HOOKS TILL ACTIVE: FALSE
-                                        request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: orgsJson[i].login, token: token, hook_id: hooksJson[j].id, shouldBeActive: false }},
-                                            (error, response, body) => {
-
-                                                let options = { uri: GIT_API_URL + '/orgs/' + req.body.selectedOrg + '/hooks?access_token=' + token, method: 'GET', headers: { 'User-Agent': 'jonne', 'Content-Type': 'application/json' }}
-
-                                                //Göra den selectade organizationen aktiv för hooks
-                                                request(options, (error, response, body) => {    
-                                                    
-                                                    if (!error && response.statusCode == 200 && JSON.parse(body)[0] != undefined) {
-                                                        //Enable notifications på organizationen genom active: true i patch
-                                                        //gör en patch request o ändra active till true
-                                                        request.patch('http://localhost:8000/api/github/hook', { json: { selectedOrg: req.body.selectedOrg, token: token, hook_id: JSON.parse(body)[0].id, shouldBeActive: true }},
-                                                            (error, response, body) => {
-                                                                if (!error) {}
-                                                            }
-                                                        );
-                                                    } 
-                                                })
-                                            }
-                                        );
-                                    }
-                                }
-                            }
-                        })
-                    }
+        let options = {
+            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
+            method: 'POST',
+            headers: {
+                'User-Agent': 'jonne',
+                'Content-Type': 'application/json'
+            },
+            json: {
+                "name": "web",
+                "active": false,
+                "events": [
+                    "*",
+                ],
+                "config": {
+                    "url": process.env['NGROK_URL'] + "/hook",
+                    "content_type": "json"
                 }
-            });
-
-            res.json({message: 'hej'});
+            }
+        };
+    
+        request(options, (error, response, body) => {    
+            if (!error && response.statusCode == 200) {
+                return res.json(body);
+            } else if (error) {
+                return res.json({message: error})
+            } else if (response.statusCode == 404) {
+                return res.json({message: 'Not allowed to set hooks on specified organization.'});
+            }
         })
- 
+    })
 
 
+    //Webhook from github
     router.post('/hook', (req, res) => {
-        let json = JSON.stringify(req.body);
 
         let event_id = req.headers['x-github-delivery'];
         let event_type = req.headers['x-github-event'];
 
-        if (req.body.repository != undefined) {
-            io.emit('notiser',
-                {
-                    event_type: req.headers['x-github-event'],
-                    sender: req.body.sender.login,
-                    repository: req.body.repository.name,
-                    html_url: req.body.repository.html_url
+        let hook_org = req.body.organization.login;
+        let hook_event;
+        //Kolla vilket event hooken är också
+
+        UserModel.find({}, (err, users) => {
+            for (let i = 0; i < users.length; i++) {
+                for (let j = 0; j < users[i].subscription_list.length; j++) {
+
+                    //Jämför användarens prenumerationer med hook organisationen och sedan kolla om hook eventet matchar med användarens valda events
+                    if (users[i].subscription_list[j].org === hook_org) {
+                        if (users[i].subscription_list[j].events.includes(event_type)) {
+                            if (req.body.repository != undefined) {
+                                io.to(users[i].login).emit('user-room',
+                                    {
+                                        event_type: req.headers['x-github-event'],
+                                        sender: req.body.sender.login,
+                                        repository: req.body.repository.name,
+                                        html_url: req.body.repository.html_url
+                                    }
+                                )
+                            } else {
+                                io.to(users[i].login).emit('user-room',
+                                    {
+                                        event_type: req.headers['x-github-event'],
+                                        sender: req.body.sender.login,
+                                    }
+                                )
+                            }
+
+                            mailBoy(req, users[i].email);
+                        }
+                    }
                 }
-            )
-        } else {
-            io.emit('notiser',
-                {
-                    event_type: req.headers['x-github-event'],
-                    sender: req.body.sender.login,
-                }
-            )
-        }
+            }
+        })
+
         res.json({message: 'här är din lille hook typ'});
     })
 
@@ -320,7 +216,7 @@ module.exports = function(UserModel, io) {
     })
 
 
-
+    //UPDATE USERS LAST_ACTIVE PROPERTY
     router.post('/api/update-user-last-active', (req, res) => {
         UserModel.findOne({login: req.body.login}, function(err, user) {
             if (err) console.log(err);
@@ -338,105 +234,128 @@ module.exports = function(UserModel, io) {
         });
     })
 
+
     router.post('/api/subscribe-to-event', (req, res) => {
-        let token = req.body.token;
+        let username = req.body.username;
         let selectedOrg = req.body.selectedOrg;
         let selectedEvent = req.body.selectedEvent;
 
-        //hämta alla orgs
-        let options = {
-            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
-            method: 'GET',
-            headers: {
-                'User-Agent': 'jonne',
-                'Content-Type': 'application/json'
-            }
-        };
-    
-        request(options, (error, response, body) => {
-            if (!error && response.statusCode == 200) {   
-                let hooksJson = JSON.parse(body);
+        UserModel.findOne({login: username}, (err, user) => {
+            if (err) console.log(err);
+            if (user) {
+                //Om användaren inte har någon subscription alls
+                if (!user.subscription_list.length) { user.subscription_list.push({org: selectedOrg, events: selectedEvent}) }
 
-                    let options = {
-                        uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
-                        method: 'POST',
-                        headers: {
-                            'User-Agent': 'jonne',
-                            'Content-Type': 'application/json'
-                        },
-                        json: {
-                            "name": "web",
-                            "active": true,
-                            "events": [
-                                selectedEvent,
-                            ],
-                            "config": {
-                                "url": process.env['NGROK_URL'] + "/user-subscription-email/" + req.body.user_email,
-                                "content_type": "json",
-                                "user-subscription": true
+                let userOrgs = []
+
+                for (let i = 0; i < user.subscription_list.length; i++) {
+                    userOrgs.push(user.subscription_list[i].org);
+                    
+                    if (user.subscription_list[i].org === selectedOrg) {
+
+                        if (!user.subscription_list[i].events.length) {
+                            console.log('Subscribed to ' + selectedEvent + ' in ' + selectedOrg)
+                            user.subscription_list[i].events.push(selectedEvent)
+                        }
+                        //Kolla vilka events användaren redan är prenumererad på
+                        for (let j = 0; j < user.subscription_list[i].events.length; j++) {
+
+                            if (!user.subscription_list[i].events.includes(selectedEvent)) {
+                                console.log('Subscribed to ' + selectedEvent + ' in ' + selectedOrg)
+                                user.subscription_list[i].events.push(selectedEvent)
                             }
                         }
-                    };
-                
-                    request(options, (error, response, body) => {    
-                        if (!error) {
-                            res.json(body);
-                        } else {
-                            res.json({message: 'error typ'})
-                        }
-                    })
-            } else {
-                res.json({message: 'error typ'})
+                    } 
+                }
+
+                if (!userOrgs.includes(selectedOrg)) {
+                    console.log('(New) Subscribed to ' + selectedEvent + ' in ' + selectedOrg)
+                    user.subscription_list.push({org: selectedOrg, events: selectedEvent})
+                }
+
+                user.save((err, updatedUser) => {
+                    res.json({message: 'success'});
+                })
             }
         })
     })
 
 
     router.post('/api/unsubscribe-to-event', (req, res) => {
-        let token = req.body.token;
+        let username = req.body.username;
         let selectedOrg = req.body.selectedOrg;
         let selectedEvent = req.body.selectedEvent;
 
+        UserModel.findOne({login: username}, (err, user) => {
+            if (err) console.log(err);
+            if (user) {
+                for (let i = 0; i < user.subscription_list.length; i++) {
+                    if (user.subscription_list[i].org === selectedOrg) {
+                        //Kolla vilka events användaren redan är prenumererad på
+                        for (let j = 0; j < user.subscription_list[i].events.length; j++) {
+
+                            if (user.subscription_list[i].events.includes(selectedEvent)) {
+                                let indexOfSelectedEvent = user.subscription_list[i].events.indexOf(selectedEvent)
+
+                                if (indexOfSelectedEvent > -1) {
+                                    user.subscription_list[i].events.splice(indexOfSelectedEvent, 1);
+                                    console.log('Unsubscribed from ' + selectedEvent + ' in ' + selectedOrg)
+                                }
+                            }
+                        }
+                    } 
+                }
+
+                user.save((err, updatedUser) => {
+                    res.json({message: 'success'});
+                })
+            }
+        })
+    })
+
+
+    function storeUserInDatabaseThenSendDataToClient(access_token, res) {
         let options = {
-            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks?access_token=' + token,
+            uri: GIT_API_URL + '/user?access_token=' + access_token,
             method: 'GET',
             headers: {
                 'User-Agent': 'jonne',
                 'Content-Type': 'application/json'
             }
         };
-    
+
         request(options, (error, response, body) => {
-            if (!error && response.statusCode == 200) {   
-                let hooksJson = JSON.parse(body);
+            if (!error && response.statusCode == 200) {
+                let data = JSON.parse(body)
 
-                for (let i = 0; i < hooksJson.length; i++) {
+                let userData = {
+                    login: data.login,
+                    avatar_url: data.avatar_url,
+                    email: data.email,
+                    last_active: Date.now()
+                }
 
-                    if (hooksJson[i].config.hasOwnProperty("user-subscription")) {
-                        let options = {
-                            uri: GIT_API_URL + '/orgs/' + selectedOrg + '/hooks/' + hooksJson[i].id + '?access_token=' + token,
-                            method: 'DELETE',
-                            headers: {
-                                'User-Agent': 'jonne',
-                                'Content-Type': 'application/json'
+                UserModel.findOne({login: data.login}, (err, doc) => {
+                    if (doc == null) {
+                        let registerNewUser = new UserModel(userData);
+                        registerNewUser.save((err, doc) => {
+                            if (err) {
+                                console.log(err);
                             }
-                        };
-                    
-                        request(options, (error, response, body) => {    
-                            if (!error && response.statusCode == 200) {
-                                res.json(body);
-                            } else {
-                                res.json({message: 'error typ'})
-                            }
+
+                            
                         })
                     }
-                }
+                })
+
+                res.json({access_token, userData});
             }
-        })
-    })
+        });
+    }
+
 
     //Email user subscription notifications
-    router.post('/user-subscription-email/:email', (req, res) => {
+    function mailBoy(req, userMail) {
         let message = '';
 
         if (req.body.repository != undefined) {
@@ -455,20 +374,18 @@ module.exports = function(UserModel, io) {
          
         let options = {
             from: "killen1dv612@gmail.com", 
-            to: req.params.email,
+            to: userMail,
             subject: "New Github Notification", 
             text: message 
         }
 
         smtpTransport.sendMail(options, (error, response) => {  
             if (error){
-                res.json({message: error})
-            } else {
-                res.json({message: 'success'})
-            }        
-        });
-        res.json({message: 'success'})
-    })
 
+            }
+                 
+        });
+    }
+    
     return router;
 };

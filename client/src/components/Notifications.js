@@ -28,7 +28,6 @@ class Notifications extends Component {
     }
 
     
-
     getOrgEvents() {
         let options = {
             token: localStorage.getItem('token'),
@@ -91,8 +90,9 @@ class Notifications extends Component {
         let newNotifications = this.state.notifications.slice();
 
         this.socket = io('http://localhost:8000');
+        this.socket.emit('user-room', localStorage.getItem('login'))
 
-        this.socket.on('notiser', function(data){
+        this.socket.on('user-room', (data) => {
             if (data.repository !== undefined) {
                 newNotifications.push(
                     <div className="notis"> 
@@ -113,7 +113,7 @@ class Notifications extends Component {
                 )
             }
             this.setState({notifications: newNotifications});
-        }.bind(this));
+        })
     }
 
     handleChange(event) {
@@ -124,10 +124,9 @@ class Notifications extends Component {
         //Skicka request till servern och skapa en hook för det valda eventet.
 
         let options = {
-            token: localStorage.getItem('token'),
+            username: localStorage.getItem('login'),
             selectedOrg: this.state.selectedOrg,
             selectedEvent: this.state.value,
-            user_email: localStorage.getItem('email')
         }
 
         fetch('/api/subscribe-to-event',{
@@ -147,7 +146,7 @@ class Notifications extends Component {
 
     handleUnsubscribeClick() {
         let options = {
-            token: localStorage.getItem('token'),
+            username: localStorage.getItem('login'),
             selectedOrg: this.state.selectedOrg,
             selectedEvent: this.state.value
         }

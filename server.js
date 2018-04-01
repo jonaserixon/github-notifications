@@ -26,6 +26,13 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 app.use(cors());
 
+io.on('connection', function(socket) {
+    socket.on('user-room', function(room) {
+        socket.join(room);
+        console.log('user joined room: ' + room)
+    });
+});
+
 app.use('/', require('./routes/api/routes')(UserModel, io));
 
 server.listen(port, () => {

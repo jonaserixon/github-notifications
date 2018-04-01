@@ -10,7 +10,7 @@ module.exports = {
         db.on("error", console.error.bind(console, "connection error:"));
 
         db.once("open", function() {
-            console.log("Succesfully connected to mongoDB");
+            console.log("Succesfully connected to mongoDB \n----");
         });
 
         process.on("SIGINT", function() {
