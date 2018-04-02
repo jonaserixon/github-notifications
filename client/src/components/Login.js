@@ -9,10 +9,6 @@ class Login extends Component {
     }
 
     componentDidMount() {
-        if (localStorage.getItem('token') !== null) {
-            //            
-        }
-        
         if (this.props.wantsToLogin) {
             this.userWantsToLogin();
         }
@@ -24,8 +20,10 @@ class Login extends Component {
 
     userWantsToLogin() {
         const client_id = '3d47ed6a79c582546a56';
-        const redirect_uri = 'http://localhost:3000/callback';
-        window.location = 'https://github.com/login/oauth/authorize?client_id=' + client_id + '&scope=admin:org_hook%20user%20read:org%20repo&&redirect_uri=' + redirect_uri;
+        // const redirect_uri = 'http://localhost:3000/callback';
+        window.location = 'https://github.com/login/oauth/authorize?client_id=' + client_id + '&scope=admin:org_hook%20user%20read:org%20repo'
+        
+        //&&redirect_uri=' + redirect_uri;
     }
 
     getAccessToken() {
@@ -47,10 +45,9 @@ class Login extends Component {
             localStorage.clear();
             localStorage.setItem('token', data.access_token)
             localStorage.setItem('login', data.userData.login)
-
+            localStorage.setItem('avatar_url', data.userData.avatar_url)
             this.setState({isLoggedInYet: true});
         })
-        
     }
 
     render() {     

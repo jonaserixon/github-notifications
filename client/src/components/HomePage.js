@@ -14,12 +14,10 @@ class HomePage extends Component {
         if (localStorage.getItem('token') !== null) {
             this.setState({isLoggedIn: true});
         }
-
-        console.log('willmount')
     }
 
-    componentDidMount() {
-        console.log('home did mount')
+    handleLoginButton() {
+        this.props.willLogin(true);
     }
 
     render() {

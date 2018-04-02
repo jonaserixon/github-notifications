@@ -1,50 +1,104 @@
 
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+
 .App {
-    background-color: lightgray;
-    width: 1000px;
-    /* min-height: 800px; */
+    background-color: #fef6fa;
+    width: 1200px;
+    min-height: 800px;
+    font-family: "Open Sans", Impact;
     margin:  auto;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border: 1px solid #fadff0;
 }
 
 .Navigation {
     text-align: center;
-    background-color: slategray;
+    background-color: #f2d9e6;
+    height: 45px;
+    /* border: 1px solid #dea0c0; */
+    /* border-radius: 5px; */
+    border-bottom: 1px solid #db8ab4;
 }
 
 .Navigation a {
-    padding: 5px;
+    padding: 3px;
+    text-decoration: none;
+    color: black;
+    font-size: 30px;
+    margin-left: 100px;
+    text-align: center;
+    border-radius: 5px;
+    background-color: #f2d9e6;
+    transition: background-color 0.1s;
+}
+
+.Navigation a:hover {
+    font-size: 30px;
+    background-color: #e7b1cd;
 }
 
 
 .Organisations {
-    width: 120px;
+    /* min-height: 600px; */
+    background-color: #fef6fa;
+}
+
+.Organisations h3 {
+    opacity: 0.7;
+    text-align: center;
+    padding-top: 10px;
 }
 
 .org {
-    width: 100px;
-    height: 100px;
-    margin-bottom: 10px;
-    background-color: ghostwhite;
-    border: 3px solid black;
+    width: 140px;
+    /* height: 100px; */
+    /* margin-bottom: 10px; */
+    margin: 45px;
+    background-color: #fdf8fb;
+    border: 1px solid lightgrey;  
     text-align: center;
+    float: left;
+    box-shadow: 4px 3px 4px rgba(0,0,21,0.2);
+    transition: box-shadow 0.2s;
+}
+
+.org:hover {
+    box-shadow: 4px 4px 4px rgba(0,0,21,0.5);
+}
+
+.org a {
+    text-decoration: none;
+    color: black;
+    
 }
 
 .org p {
-    margin:0;
+    /* margin:0; */
+    padding: 3px;
+    font-weight: bold;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+.org p:hover {
+    opacity: 1;
 }
 
 .org img {
-    width: 60px;
-    height: 60px;
+    width: 100px;
+    height: 100px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.org img:hover {
+    opacity: 1;
 }
 
 .Notifications {
-    background-color: lightgray;
-    /* float: right;
-    margin-top: -500px; */
-    border: 1px solid black;
-    min-height: 700px;
-    width: 997px;
+    width: 1200px;
+    min-height: 800px;
     display: inline-block;
     position: relative;
 }
@@ -88,17 +142,27 @@
 
 
 #subscription-options {
-    text-align: center;
-    border: 2px solid black;
-    border-radius: 5px;
+    /* border-radius: 5px; */
     width: 200px;
     position: absolute;
-    background-color: ghostwhite;
     top: 5px;
     right: 5px;
+
+    margin: 45px;
+    background-color: #fdf8fb;
+    border: 2px solid #c892b4;
+    box-shadow: 4px 2px 3px rgba(0,0,21,0.2);
+    transition: box-shadow 0.2s;
 }
 
 .input-option{
-    margin: 0;
-    border-bottom: 1px solid slategray;
+    margin: 5px;
 }
+
+.Home {
+    padding: 5px;
+
+    
+}
+
+

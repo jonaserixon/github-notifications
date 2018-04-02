@@ -79,6 +79,27 @@ module.exports = function(UserModel, io) {
     })
 
 
+    router.post('/api/selected-org', (req, res) => {
+        let token = req.body.token;
+        let selectedOrg = req.body.selectedOrg;
+        
+        let options = {
+            uri: GIT_API_URL + '/orgs/' + selectedOrg + '?access_token=' + token,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'jonne',
+                'Content-Type': 'application/json'
+            }
+        };
+    
+        request(options, (error, response, body) => {
+            if (!error && response.statusCode == 200) {   
+                return res.json(body);
+            }
+        })
+    })
+
+
     //Skapa en webhook på den valda organizationen
     router.post(('/api/github/hook'), (req, res) => {
         let token = req.body.token;
@@ -274,7 +295,7 @@ module.exports = function(UserModel, io) {
                 }
 
                 user.save((err, updatedUser) => {
-                    res.json({message: 'success'});
+                    res.json({selectedEvent, selectedOrg});
                 })
             }
         })
@@ -300,15 +321,15 @@ module.exports = function(UserModel, io) {
                                 if (indexOfSelectedEvent > -1) {
                                     user.subscription_list[i].events.splice(indexOfSelectedEvent, 1);
                                     console.log('Unsubscribed from ' + selectedEvent + ' in ' + selectedOrg)
-                                }
+
+                                    user.save((err, updatedUser) => {
+                                        return res.json({selectedEvent, selectedOrg});
+                                    })
+                                } 
                             }
                         }
                     } 
                 }
-
-                user.save((err, updatedUser) => {
-                    res.json({message: 'success'});
-                })
             }
         })
     })

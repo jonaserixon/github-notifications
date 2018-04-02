@@ -29,7 +29,7 @@ class Organisations extends Component {
             },
         })
         .then(res => res.json())
-        .then(function(data) {
+        .then((data) => {
             let jsonOrgs = JSON.parse(data);
             let newOrgs = this.state.orgs.slice();
 
@@ -43,14 +43,15 @@ class Organisations extends Component {
                     </div>
                 )
             }
-
             this.setState({orgs: newOrgs});
-        }.bind(this))
+        })
     }
 
     render() {
         return (
             <div className="Organisations">
+                <h3>Choose an organization to be able to view notifications and subscribe</h3>
+
                 {this.state.orgs}
             </div>
         );

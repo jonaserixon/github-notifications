@@ -9,7 +9,9 @@ class Notifications extends Component {
             notifications: [],
             unreadNotifications: [],
             subscriptionList: '',
-            value: ''
+            value: '',
+            org_avatar: '',
+            subscription_flash: ''
         }
     }
 
@@ -24,9 +26,33 @@ class Notifications extends Component {
             this.enableNotifications();
             this.getOrgEvents();
             this.presentSubscriptionOptions();
+            this.getSelectedOrgInfo();
         })
     }
 
+    getSelectedOrgInfo() {
+        let options = {
+            token: localStorage.getItem('token'),
+            selectedOrg: this.state.selectedOrg,
+        }
+
+        fetch('/api/selected-org',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+            let json = JSON.parse(data);
+
+            let orgAvatar = [<p>{this.state.selectedOrg}</p>, <img src={json.avatar_url} alt="profile of org" />]
+
+            this.setState({org_avatar: orgAvatar})
+        })
+    }
     
     getOrgEvents() {
         let options = {
@@ -121,7 +147,9 @@ class Notifications extends Component {
     }
 
     handleSubscribeClick() {
-        //Skicka request till servern och skapa en hook för det valda eventet.
+        if (!this.state.value.length) {
+            return this.setState({subscription_flash: <p>You did not select any event!</p>});
+        }
 
         let options = {
             username: localStorage.getItem('login'),
@@ -139,12 +167,17 @@ class Notifications extends Component {
         })
         .then(res => res.json())
         .then((data) => {
-
+            this.setState({subscription_flash: <p>You subscribed to {data.selectedEvent} in {data.selectedOrg}!</p>})
         })
-
+        
     }
 
     handleUnsubscribeClick() {
+
+        if (!this.state.value.length) {
+            return this.setState({subscription_flash: <p>You did not select any event!</p>});
+        }
+
         let options = {
             username: localStorage.getItem('login'),
             selectedOrg: this.state.selectedOrg,
@@ -161,7 +194,7 @@ class Notifications extends Component {
         })
         .then(res => res.json())
         .then((data) => {
-
+            this.setState({subscription_flash: <p>You unsubscribed from {data.selectedEvent} in {data.selectedOrg}!</p>})
         })
     }
 
@@ -171,23 +204,31 @@ class Notifications extends Component {
                 <h3>Subscribe to event</h3>
 
                     <div className='input-option'>
-                        <p>Issues:</p>
+                    <label>
                         <input type="radio" name="subscription" value="issues" onChange={this.handleChange.bind(this)}/>
+                        issues
+                    </label>
                     </div>
                     
                     <div className='input-option'>
-                        <p>Issue_comment:</p>
-                        <input type="radio" name="subscription" value="issue_comment" onChange={this.handleChange.bind(this)}/>
+                        <label>
+                            <input type="radio" name="subscription" value="issue_comment" onChange={this.handleChange.bind(this)}/>
+                            issue_comment
+                        </label>
                     </div>
 
                     <div className='input-option'>
-                        <p>Public:</p>
-                        <input type="radio" name="subscription" value="public" onChange={this.handleChange.bind(this)}/>
+                        <label>
+                            <input type="radio" name="subscription" value="public" onChange={this.handleChange.bind(this)}/>
+                            Public
+                        </label>
                     </div>
 
                     <div className='input-option'>
-                        <p>Repository:</p>
+                    <label>
                         <input type="radio" name="subscription" value="repository" onChange={this.handleChange.bind(this)}/>
+                        repository
+                    </label>
                     </div>
 
                     <button onClick={this.handleSubscribeClick.bind(this)}>Subscribe</button>
@@ -200,13 +241,14 @@ class Notifications extends Component {
     render() {
         return (
             <div className="Notifications">
-                <div>{this.state.selectedOrg}</div>
+                <div className="org">{this.state.org_avatar}</div>
                 <div>{this.state.notifications}</div>
                 <div id="unread-notis">
                     {this.state.unreadNotifications}
                 </div>
 
                 <div>{this.state.subscriptionList}</div>
+                <div>{this.state.subscription_flash}</div>
             </div>
         );
     }
