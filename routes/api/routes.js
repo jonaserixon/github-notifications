@@ -159,6 +159,7 @@ module.exports = function(UserModel, io) {
                                     {
                                         event_type: req.headers['x-github-event'],
                                         sender: req.body.sender.login,
+                                        sender_avatar: req.body.sender.avatar_url,
                                         repository: req.body.repository.name,
                                         html_url: req.body.repository.html_url
                                     }
@@ -172,7 +173,7 @@ module.exports = function(UserModel, io) {
                                 )
                             }
 
-                            mailBoy(req, users[i].email);
+                            //mailBoy(req, users[i].email);
                         }
                     }
                 }

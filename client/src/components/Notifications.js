@@ -47,9 +47,7 @@ class Notifications extends Component {
         .then(res => res.json())
         .then((data) => {
             let json = JSON.parse(data);
-
-            let orgAvatar = [<p>{this.state.selectedOrg}</p>, <img src={json.avatar_url} alt="profile of org" />]
-
+            let orgAvatar = [<a href={json.html_url}>{this.state.selectedOrg}</a>, <img src={json.avatar_url} alt="profile of org" />]
             this.setState({org_avatar: orgAvatar})
         })
     }
@@ -119,14 +117,13 @@ class Notifications extends Component {
         this.socket.emit('user-room', localStorage.getItem('login'))
 
         this.socket.on('user-room', (data) => {
+            console.log(data);
             if (data.repository !== undefined) {
                 newNotifications.push(
                     <div className="notis"> 
-                        <p>New</p>
-                        <p>{data.event_type}</p>
-                        <p>{data.sender}</p>
-                        <p>{data.repository}</p>
-                        <a href={data.html_url}>Link to event</a>
+                        <img src={data.sender_avatar}/>
+                        <p>New {data.event_type} from {data.sender} in {data.repository}</p>
+                        <a href={data.html_url}>{data.html_url}</a>
                     </div>
                 )
             } else {
@@ -173,7 +170,6 @@ class Notifications extends Component {
     }
 
     handleUnsubscribeClick() {
-
         if (!this.state.value.length) {
             return this.setState({subscription_flash: <p>You did not select any event!</p>});
         }
@@ -201,7 +197,7 @@ class Notifications extends Component {
     presentSubscriptionOptions() {
         let subscriptionOptions = 
             <div id='subscription-options'>
-                <h3>Subscribe to event</h3>
+                <h3>Event Subscription</h3>
 
                     <div className='input-option'>
                     <label>
@@ -242,11 +238,12 @@ class Notifications extends Component {
         return (
             <div className="Notifications">
                 <div className="org">{this.state.org_avatar}</div>
-                <div>{this.state.notifications}</div>
-                <div id="unread-notis">
-                    {this.state.unreadNotifications}
-                </div>
 
+                <div id="notification-container">
+                    <div>{this.state.notifications}</div>
+                    <div id="unread-notis">{this.state.unreadNotifications}</div>
+                </div>
+                
                 <div>{this.state.subscriptionList}</div>
                 <div>{this.state.subscription_flash}</div>
             </div>
