@@ -1,7 +1,7 @@
-Application is not deployed anywhere yet. Only works locally for now.
+**[Live Demo](http://188.166.70.97:8000)**
 
 # 2 - Web Application Development Assignment
-**Setup Development:**
+**Development Setup:**
 1. Run ```npm install```
 2. Download and run ngrok (https://ngrok.com/download)
 3. Run ```ngrok.exe http 8000``` in ngrok terminal
@@ -10,4 +10,3 @@ Application is not deployed anywhere yet. Only works locally for now.
 
 **Bugs** 
 - Unread notifications will not be treated as read until user has logged out
-
