@@ -20,20 +20,25 @@ let UserModel = mongoose.model('users-github');
 
 require('./config/database').initialize();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'client/build')));
-
-app.use(cors());
-
-io.on('connection', function(socket) {
+io.on('connection', (socket) => {
     socket.on('user-room', function(room) {
         socket.join(room);
         console.log('user joined room: ' + room)
     });
 });
 
-app.use('/', require('./routes/api/routes')(UserModel, io));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+app.use(cors());
+
+app.use((req, res, next) => {
+    res.setHeader("Content-Security-Policy", "script-src 'self' https://api.github.com");
+    return next();
+});
+
+app.use('/', require('./routes/routes')(UserModel, io));
 
 server.listen(port, () => {
     console.log("Express started on http://localhost:" + port);

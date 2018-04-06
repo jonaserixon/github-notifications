@@ -179,7 +179,7 @@ module.exports = function(UserModel, io) {
                                     )
                                 }
 
-                                mailBoy(req, users[i].email);
+                                //mailBoy(req, users[i].email);
                             }
                         }
                     }
