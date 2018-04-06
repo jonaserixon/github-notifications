@@ -4,6 +4,7 @@ const router = require("express").Router();
 const request = require('request');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const GIT_API_URL='https://api.github.com';
 
@@ -120,7 +121,8 @@ module.exports = function(UserModel, io) {
                 ],
                 "config": {
                     "url": process.env['NGROK_URL'] + "/hook",
-                    "content_type": "json"
+                    "content_type": "json",
+                    "secret": process.env['CLIENT_SECRET']
                 }
             }
         };
@@ -142,45 +144,50 @@ module.exports = function(UserModel, io) {
 
         let event_id = req.headers['x-github-delivery'];
         let event_type = req.headers['x-github-event'];
+        let hook_signature = req.headers['x-hub-signature'];
 
-        let hook_org = req.body.organization.login;
-        let hook_event;
-        //Kolla vilket event hooken är också
+        let signature = "sha1=" + crypto.createHmac('sha1', process.env['CLIENT_SECRET']).update(JSON.stringify(req.body)).digest('hex')
 
-        UserModel.find({}, (err, users) => {
-            for (let i = 0; i < users.length; i++) {
-                for (let j = 0; j < users[i].subscription_list.length; j++) {
+        if (hook_signature !== signature) {
+            return res.json({message: 'Bad hook'})
+        } else {
+            let hook_org = req.body.organization.login;
 
-                    //Jämför användarens prenumerationer med hook organisationen och sedan kolla om hook eventet matchar med användarens valda events
-                    if (users[i].subscription_list[j].org === hook_org) {
-                        if (users[i].subscription_list[j].events.includes(event_type)) {
-                            if (req.body.repository != undefined) {
-                                io.to(users[i].login).emit('user-room',
-                                    {
-                                        event_type: req.headers['x-github-event'],
-                                        sender: req.body.sender.login,
-                                        sender_avatar: req.body.sender.avatar_url,
-                                        repository: req.body.repository.name,
-                                        html_url: req.body.repository.html_url
-                                    }
-                                )
-                            } else {
-                                io.to(users[i].login).emit('user-room',
-                                    {
-                                        event_type: req.headers['x-github-event'],
-                                        sender: req.body.sender.login,
-                                    }
-                                )
+            UserModel.find({}, (err, users) => {
+                for (let i = 0; i < users.length; i++) {
+                    for (let j = 0; j < users[i].subscription_list.length; j++) {
+
+                        //Jämför användarens prenumerationer med hook organisationen och sedan kolla om hook eventet matchar med användarens valda events
+                        if (users[i].subscription_list[j].org === hook_org) {
+                            if (users[i].subscription_list[j].events.includes(event_type)) {
+                                if (req.body.repository != undefined) {
+                                    io.to(users[i].login).emit('user-room',
+                                        {
+                                            event_type: req.headers['x-github-event'],
+                                            sender: req.body.sender.login,
+                                            sender_avatar: req.body.sender.avatar_url,
+                                            repository: req.body.repository.name,
+                                            html_url: req.body.repository.html_url
+                                        }
+                                    )
+                                } else {
+                                    io.to(users[i].login).emit('user-room',
+                                        {
+                                            event_type: req.headers['x-github-event'],
+                                            sender: req.body.sender.login,
+                                        }
+                                    )
+                                }
+
+                                mailBoy(req, users[i].email);
                             }
-
-                            //mailBoy(req, users[i].email);
                         }
                     }
                 }
-            }
-        })
+            })
+        }
 
-        res.json({message: 'här är din lille hook typ'});
+        res.json({message: 'Success'});
     })
 
 
@@ -389,13 +396,13 @@ module.exports = function(UserModel, io) {
         var smtpTransport = nodemailer.createTransport({
             service: "Gmail",  
             auth: {
-                user: "killen1dv612@gmail.com",
-                pass: "norrliden"
+                user: process.env['EMAIL_ADDRESS'],
+                pass: process.env['EMAIL_PASSWORD']
             }
         });
          
         let options = {
-            from: "killen1dv612@gmail.com", 
+            from: process.env['EMAIL_ADDRESS'], 
             to: userMail,
             subject: "New Github Notification", 
             text: message 
