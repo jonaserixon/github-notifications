@@ -36,7 +36,7 @@ class Notifications extends Component {
             selectedOrg: this.state.selectedOrg,
         }
 
-        fetch('/api/selected-org',{
+        fetch('/selected-org',{
             body: JSON.stringify(options),
             method: 'POST',
             headers: {
@@ -59,7 +59,7 @@ class Notifications extends Component {
             login: localStorage.getItem('login')
         }
 
-        fetch('/api/github/org-events',{
+        fetch('/github/org-events',{
             body: JSON.stringify(options),
             method: 'POST',
             headers: {
@@ -77,7 +77,6 @@ class Notifications extends Component {
                         <p>Unread</p>
                         <p>Type: {data[i].event_type}</p>
                         <p>Repo: {data[i].event_repo}</p>
-                        {/* <p>{data[i].event_id}</p> */}
                     </div>
                 )
             }
@@ -96,7 +95,7 @@ class Notifications extends Component {
             selectedOrg: this.state.selectedOrg
         }
 
-        fetch('/api/github/handlehook',{
+        fetch('/github/handlehook',{
             body: JSON.stringify(options),
             method: 'POST',
             headers: {
@@ -154,7 +153,7 @@ class Notifications extends Component {
             selectedEvent: this.state.value,
         }
 
-        fetch('/api/subscribe-to-event',{
+        fetch('/subscribe-to-event',{
             body: JSON.stringify(options),
             method: 'POST',
             headers: {
@@ -180,7 +179,7 @@ class Notifications extends Component {
             selectedEvent: this.state.value
         }
 
-        fetch('/api/unsubscribe-to-event',{
+        fetch('/unsubscribe-to-event',{
             body: JSON.stringify(options),
             method: 'POST',
             headers: {
@@ -240,6 +239,7 @@ class Notifications extends Component {
                 <div className="org">{this.state.org_avatar}</div>
 
                 <div id="notification-container">
+                <p>Notification Flow</p>
                     <div>{this.state.notifications}</div>
                     <div id="unread-notis">{this.state.unreadNotifications}</div>
                 </div>

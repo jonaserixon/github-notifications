@@ -31,7 +31,7 @@ class Login extends Component {
             code: window.location.href.substring(window.location.href.indexOf("=") + 1, window.location.href.length)
         }
 
-        fetch('/api/github/auth',{
+        fetch('/github/auth',{
             body: JSON.stringify(callbackCode),
             method: 'POST',
             headers: {

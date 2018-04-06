@@ -17,7 +17,6 @@ const mongoose = require('mongoose');
 let User = require('./models/User');
 let UserModel = mongoose.model('users-github');
 
-
 require('./config/database').initialize();
 
 io.on('connection', (socket) => {
@@ -29,7 +28,7 @@ io.on('connection', (socket) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, 'public/build')));
 
 app.use(cors());
 
@@ -38,7 +37,12 @@ app.use((req, res, next) => {
     return next();
 });
 
+//Routes
 app.use('/', require('./routes/routes')(UserModel, io));
+app.use('/', require('./routes/auth')(UserModel));
+app.use('/', require('./routes/orgs')(UserModel));
+app.use('/', require('./routes/subscription')(UserModel));
+
 
 server.listen(port, () => {
     console.log("Express started on http://localhost:" + port);

@@ -17,8 +17,6 @@
     text-align: center;
     background-color: #f2d9e6;
     height: 45px;
-    /* border: 1px solid #dea0c0; */
-    /* border-radius: 5px; */
     border-bottom: 1px solid #db8ab4;
 }
 
@@ -41,7 +39,6 @@
 
 
 .Organisations {
-    /* min-height: 600px; */
     background-color: #fef6fa;
 }
 
@@ -53,8 +50,7 @@
 
 .org {
     width: 140px;
-    /* height: 100px; */
-    /* margin-bottom: 10px; */
+    height: 200px;
     margin: 45px;
     background-color: #fdf8fb;
     border: 1px solid lightgrey;  
@@ -62,6 +58,7 @@
     float: left;
     box-shadow: 4px 3px 4px rgba(0,0,21,0.2);
     transition: box-shadow 0.2s;
+    position: relative;
 }
 
 .org:hover {
@@ -75,7 +72,6 @@
 }
 
 .org p {
-    /* margin:0; */
     padding: 3px;
     font-weight: bold;
     opacity: 0.9;
@@ -97,6 +93,12 @@
     opacity: 1;
 }
 
+.count-notifications {
+    background-color: rgb(253, 138, 215);
+    width: 30px;
+    margin: 0 auto;
+}
+
 .Notifications {
     width: 1200px;
     min-height: 800px;
@@ -105,8 +107,6 @@
 }
 
 #notification-container {
-    /* margin-top: 20px;
-    margin-left: 300px; */
     position: absolute;
     top: 5px;
     right: 5px;
@@ -124,8 +124,6 @@
     box-shadow: 4px 2px 3px rgba(0,0,21,0.2);
     border-radius: 5px;
     position: relative;
-    /* margin-top: 20px;
-    margin-left: 300px; */
 }
 
 .notis p {
@@ -160,11 +158,8 @@
     background-color: #fdf8fb;
     border: 2px solid #c892b4;
     box-shadow: 4px 2px 3px rgba(0,0,21,0.2);
-
     border-radius: 5px;
     position: relative;
-    /* margin-top: 15px;
-    margin-left: 300px; */
 }
 
 .unread-notification p {
@@ -207,8 +202,6 @@
 
 .Home {
     padding: 5px;
-
-    
 }
 
 

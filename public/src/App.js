@@ -38,11 +38,12 @@ class App extends Component {
         //click login button
     }
 
+    
     updateUserLastActive() {
         let options = {
             login: localStorage.getItem('login')
         }
-        fetch('/api/update-user-last-active',{
+        fetch('/update-user-last-active',{
             body: JSON.stringify(options),
             method: 'POST',
             headers: {

@@ -5,9 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "client": "cd client && npm run start",
+    "client": "cd public && npm run start",
     "server": "nodemon server.js",
-    "chaos": "concurrently --kill-others \"npm run client\" \"npm run server\""
+    "chaos": "concurrently --kill-others  \"npm run server\" \"npm run client\""
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "nodemailer": "^4.6.2",
     "nodemon": "^1.15.1",
     "request": "^2.83.0",
+    "request-promise": "^4.2.2",
     "socket.io": "^2.0.4"
   },
   "devDependencies": {
