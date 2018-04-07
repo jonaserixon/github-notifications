@@ -73,7 +73,7 @@ class Organisations extends Component {
             login: localStorage.getItem('login')
         }
 
-        fetch('/github/org-events',{
+        fetch('/github/unread-org-events',{
             body: JSON.stringify(data),
             method: 'POST',
             headers: {

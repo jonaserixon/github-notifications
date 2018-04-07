@@ -23,10 +23,66 @@ class Notifications extends Component {
 
     componentDidMount() {
         this.setState({selectedOrg: window.location.href.substring(36, window.location.href.length)}, () => {
-            this.enableNotifications();
             this.getOrgEvents();
             this.presentSubscriptionOptions();
             this.getSelectedOrgInfo();
+        })
+    }
+
+    componentWillUnmount() {
+        console.log('den unmountar nu hehe')
+        this.setHooksToRead();
+    }
+
+    setHooksToRead() {
+        let options = {
+            selectedOrg: this.state.selectedOrg,
+            login: localStorage.getItem('login')
+        }
+
+        fetch('/github/set-hooks-to-read',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+
+        })
+    }
+
+    getOrgEvents() {
+        let options = {
+            selectedOrg: this.state.selectedOrg,
+            login: localStorage.getItem('login')
+        }
+
+        fetch('/github/unread-notifications',{
+            body: JSON.stringify(options),
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(res => res.json())
+        .then((data) => {
+            let newNots = this.state.unreadNotifications.slice();
+            for (let i = 0; i < data.length; i++) {
+                
+                newNots.push(
+                    <div className="unread-notification">
+                        <p>Unread</p>
+                        <p>{data[i].event_type}</p>
+                        <a href={data[i].url} >{data[i].url}</a>
+                    </div>
+                )
+            }
+
+            this.setState({unreadNotifications: newNots})
         })
     }
 
@@ -51,63 +107,6 @@ class Notifications extends Component {
             this.setState({org_avatar: orgAvatar})
         })
     }
-    
-    getOrgEvents() {
-        let options = {
-            token: localStorage.getItem('token'),
-            selectedOrg: this.state.selectedOrg,
-            login: localStorage.getItem('login')
-        }
-
-        fetch('/github/org-events',{
-            body: JSON.stringify(options),
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-        })
-        .then(res => res.json())
-        .then((data) => {
-            let newNots = this.state.unreadNotifications.slice();
-            for (let i = 0; i < data.length; i++) {
-                
-                newNots.push(
-                    <div className="unread-notification">
-                        <p>Unread</p>
-                        <p>Type: {data[i].event_type}</p>
-                        <p>Repo: {data[i].event_repo}</p>
-                    </div>
-                )
-            }
-
-            this.setState({unreadNotifications: newNots})
-        })
-    }
-
-
-    enableNotifications() {
-        //Skicka en request och ange den selectade organisationen för att antingen skapa en hook för den eller kolla om det redan finns en hook för den.
-        //Skriv ut alla events från repots historik. presentera dom som "older" notifications.
-
-        let options = {
-            token: localStorage.getItem('token'),
-            selectedOrg: this.state.selectedOrg
-        }
-
-        fetch('/github/handlehook',{
-            body: JSON.stringify(options),
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-        })
-        .then(res => res.json())
-        .then((data) => {
-        })
-    }
-
 
     getNotifications() {
         let newNotifications = this.state.notifications.slice();
@@ -209,13 +208,6 @@ class Notifications extends Component {
                         <label>
                             <input type="radio" name="subscription" value="issue_comment" onChange={this.handleChange.bind(this)}/>
                             issue_comment
-                        </label>
-                    </div>
-
-                    <div className='input-option'>
-                        <label>
-                            <input type="radio" name="subscription" value="public" onChange={this.handleChange.bind(this)}/>
-                            Public
                         </label>
                     </div>
 

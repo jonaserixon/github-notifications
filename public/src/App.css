@@ -56,13 +56,15 @@
     border: 1px solid lightgrey;  
     text-align: center;
     float: left;
-    box-shadow: 4px 3px 4px rgba(0,0,21,0.2);
-    transition: box-shadow 0.2s;
+    box-shadow: 2px 2px 4px rgba(0,0,21,0.2);
+    opacity: 0.8;
+    transition: box-shadow 0.2s, opacity 0.2s;
     position: relative;
 }
 
 .org:hover {
     box-shadow: 4px 4px 4px rgba(0,0,21,0.5);
+    opacity: 1;
 }
 
 .org a {
@@ -74,23 +76,12 @@
 .org p {
     padding: 3px;
     font-weight: bold;
-    opacity: 0.9;
-    transition: opacity 0.2s;
 }
 
-.org p:hover {
-    opacity: 1;
-}
 
 .org img {
     width: 100px;
     height: 100px;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-}
-
-.org img:hover {
-    opacity: 1;
 }
 
 .count-notifications {
@@ -163,9 +154,13 @@
 }
 
 .unread-notification p {
-    margin:5px;
-    font-size: 14px;
-    width: 180px;   
+    margin: 0px;
+}
+
+.notification-url a {
+    font-size: 10px;
+    position: absolute;
+    bottom: 0px;
 }
 
 

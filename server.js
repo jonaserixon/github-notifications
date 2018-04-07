@@ -15,6 +15,8 @@ var io = require('socket.io')(server);
 
 const mongoose = require('mongoose');
 let User = require('./models/User');
+let GithubEvent = require('./models/Event');
+let GithubEventModel = mongoose.model('github-event');
 let UserModel = mongoose.model('users-github');
 
 require('./config/database').initialize();
@@ -38,9 +40,9 @@ app.use((req, res, next) => {
 });
 
 //Routes
-app.use('/', require('./routes/routes')(UserModel, io));
+app.use('/', require('./routes/routes')(UserModel, io, GithubEventModel));
 app.use('/', require('./routes/auth')(UserModel));
-app.use('/', require('./routes/orgs')(UserModel));
+app.use('/', require('./routes/orgs')(UserModel, GithubEventModel));
 app.use('/', require('./routes/subscription')(UserModel));
 
 

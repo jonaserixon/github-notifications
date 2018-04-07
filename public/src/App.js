@@ -29,29 +29,12 @@ class App extends Component {
     }
 
     logout() {
-        this.updateUserLastActive();
         localStorage.clear();
         this.setState({isLoggedIn: false})
     }
 
     login() {
         //click login button
-    }
-
-    
-    updateUserLastActive() {
-        let options = {
-            login: localStorage.getItem('login')
-        }
-        fetch('/update-user-last-active',{
-            body: JSON.stringify(options),
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-        })
-        .then(res => res.json())
     }
 
     render() {
