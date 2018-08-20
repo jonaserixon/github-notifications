@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public/build')));
+// app.use(express.static(path.join(__dirname, 'public/build')));
 
 app.use(cors());
 

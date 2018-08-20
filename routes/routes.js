@@ -8,7 +8,7 @@ module.exports = function(UserModel, io, GithubEventModel) {
 
     //Webhook from github
     router.post('/hook', (req, res) => {
-
+        console.log('___________________________________________--------------')
         let event_id = req.headers['x-github-delivery'];
         let event_type = req.headers['x-github-event'];
         let hook_signature = req.headers['x-hub-signature'];
@@ -57,7 +57,7 @@ module.exports = function(UserModel, io, GithubEventModel) {
                                     )
                                 } 
     
-                                //mailBoy(req, users[i].email);
+                                mailBoy(req, users[i].email);
                             }
                         }
                     }
